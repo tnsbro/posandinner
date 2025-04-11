@@ -1,0 +1,58 @@
+/* 전체 앱 스타일 */
+.app {
+  font-family: "Arial", sans-serif;
+  padding: 24px;
+  background-color: #f0f4f8;
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* 메뉴 제목 */
+.menu-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* 메뉴 리스트 */
+.menu-list {
+  list-style: none;
+  padding: 0;
+  font-size: 20px;
+  margin-bottom: 120px;
+}
+
+/* 🪄 티켓 카드 기본 스타일 */
+.ticket-card {
+  position: fixed;
+  bottom: -200px; /* 살짝 튀어나오도록 조정됨 */
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 20px 20px 0 0;
+  transition: bottom 0.4s ease, height 0.3s ease;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+/* 살짝만 보이는 상태 */
+.ticket-card.peek {
+  bottom: -80px;
+}
+
+/* 완전히 올라온 상태 */
+.ticket-card.open {
+  bottom: 0;
+}
+
+/* 👆 안내 문구 */
+.pull-tab {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
