@@ -1,55 +1,56 @@
-import React, { useState } from 'react';
-import './DinnerTicket.css'; // CSS 파일 이름은 그대로 사용
+// src/components/DinnerTicket.jsx
+import React, { useState } from 'react'; // useState 다시 임포트
+import './DinnerTicket.css';
 
-function DinnerTicket({ menuData }) {
+// props로 date, location 받음 (isOpen, onClose 제거)
+function DinnerTicket({ date, location }) {
+  // --- 상태 관리 다시 추가 ---
   const [isOpen, setIsOpen] = useState(false);
 
-  // 시트 열기/닫기 토글 (핸들 클릭 시)
-  const toggleSheet = (e) => {
-    if (e) e.stopPropagation(); // 이벤트 전파 중지
+  const toggleTicket = (e) => {
+    if (e) e.stopPropagation();
     setIsOpen(!isOpen);
   };
 
-  // 배경 클릭 시 시트 닫기
-  const closeSheet = () => {
+  const closeTicket = () => {
     setIsOpen(false);
   };
+  // --------------------------
 
-  // 데이터 없으면 렌더링 안 함
-  if (!menuData) return null;
+  if (!date) return null;
 
-  const { date, mainCourse, sideDishes, location, calories } = menuData;
+  const dummyCardNumber = "5890 **** **** 1234";
+  const validThru = "04/26";
 
   return (
     <>
-      {/* 배경 오버레이 */}
+      {/* 배경 오버레이: 클릭 시 closeTicket 호출 */}
       <div
         className={`backdrop ${isOpen ? 'active' : ''}`}
-        onClick={closeSheet}
+        onClick={closeTicket}
       ></div>
 
-      {/* 바텀 시트 컨테이너 */}
-      <div className={`bottom-sheet ${isOpen ? 'active' : ''}`}>
-        {/* 시트 핸들 (클릭하여 열고 닫기) */}
-        <div className="sheet-handle" onClick={toggleSheet}>
-          <div className="handle-bar"></div> {/* 핸들바 시각적 표시 */}
-          {/* 닫혀 있을 때 보이는 요약 정보 (선택 사항) */}
-          {!isOpen && <span className="peek-summary">오늘의 식권 보기 ({date})</span>}
+      {/* 식권 카드: 클릭 시 toggleTicket 호출 */}
+      <div
+        className={`credit-card-ticket ${isOpen ? 'active' : ''}`}
+        onClick={toggleTicket}
+      >
+        <div className="card-design-elements">
+          {/* ... (카드 내부 디자인 요소 동일) ... */}
+          <div className="card-chip"></div>
+          <div className="card-logo">Meal Ticket</div>
+          <div className="card-number">{dummyCardNumber}</div>
+          <div className="card-info">
+            <span className="card-holder">{location || 'Cafeteria'}</span>
+            <div className="card-valid-thru-expiry">
+              <span className="card-valid-thru">VALID<br/>THRU</span>
+              <span className="card-expiry">{validThru}</span>
+            </div>
+          </div>
         </div>
 
-        {/* 시트 내용 (메뉴 상세 정보) */}
-        <div className="sheet-content">
-          <h2>{date} 석식 메뉴</h2>
-          <h3>{mainCourse}</h3>
-          <ul>
-            {sideDishes.map((dish, index) => (
-              <li key={index}>{dish}</li>
-            ))}
-          </ul>
-          {calories && <p className="calories-sheet">열량: {calories}</p>}
-          {location && <p className="location-sheet">장소: {location}</p>}
-          {/* 여기에 추가적인 버튼이나 정보 배치 가능 */}
-        </div>
+        {/* 카드 하단 힌트 다시 추가 */}
+        {!isOpen && <div className="peek-hint-bottom">탭하여 식권 보기 ({date})</div>}
       </div>
     </>
   );

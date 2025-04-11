@@ -1,133 +1,70 @@
-/* DinnerTicket.css */
+/* src/components/DinnerTicket.css */
 
-/* 배경 오버레이 스타일 (이전과 동일) */
+/* 배경 오버레이 스타일 */
 .backdrop {
+  /* ... (이전과 동일) ... */
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1001; /* 패널(1000)과 활성 카드(1002) 사이 */
+  /* ... (나머지 동일) ... */
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; opacity: 0; visibility: hidden; transition: opacity 0.5s ease-out, visibility 0s linear 0.5s;
+}
+.backdrop.active { opacity: 1; visibility: visible; transition-delay: 0s; }
+
+
+/* 카드 스타일 */
+.credit-card-ticket {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
-  opacity: 0;
-  visibility: hidden;
-  z-index: 999;
-  transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; /* 지속시간 조정 */
+  top: 50%; left: 50%;
+  width: 400px; height: 640px;
+  /* ... (카드 디자인 스타일 동일) ... */
+  border-radius: 18px; background: linear-gradient(160deg, #6a11cb, #2575fc); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); overflow: hidden; cursor: pointer; color: white; font-family: 'Arial', sans-serif;
+  transform: translate(-50%, calc(50vh - 580px)); /* 패널 위로 살짝 보이도록 */
+  opacity: 1; /* 다시 보이도록 */
+  visibility: visible; /* 다시 보이도록 */
+  /* --------------------------------------- */
+
+  /* --- Z-index 설정 --- */
+  z-index: 999; /* 초기 상태: 패널(1000)보다 아래 */
+  /* ----------------- */
+
+  /* 애니메이션 */
+  transition: transform 0.5s ease-out; /* z-index는 즉시 변경되므로 transition 불필요 */
 }
 
-.backdrop.active {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.4s ease-out, visibility 0s linear 0s;
+.credit-card-ticket.active {
+  /* 활성 상태 (중앙) */
+  transform: translate(-50%, -50%);
+  cursor: default;
+  z-index: 1002; /* 활성 상태: 모든 요소(배경 1001 포함) 위에 */
 }
 
-/* --- 바텀 시트 스타일 --- */
-.bottom-sheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0; /* left: 0, right: 0 으로 너비 100% 효과 */
-  width: 100%; /* 명시적으로 100% */
-  max-height: 85vh; /* 시트의 최대 높이 (화면 높이의 85%) */
-  /* min-height: 60px; */ /* 최소 높이는 핸들 높이 */
-  background-color: #ffffff; /* 시트 배경색 */
-  border-top-left-radius: 16px; /* 위쪽 모서리 둥글게 */
-  border-top-right-radius: 16px;
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15); /* 위쪽 그림자 */
-  z-index: 1000; /* backdrop보다 위 */
-  overflow: hidden; /* 내부 스크롤은 content 영역에서 처리 */
+/* --- 카드 디자인 요소 스타일 (동일) --- */
+/* ... */
+.card-design-elements { padding: 30px 25px; position: relative; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
+.card-chip { width: 45px; height: 35px; background-color: #f0c040; border-radius: 5px; margin-bottom: 20px; align-self: flex-start; }
+.card-logo { font-size: 1.4em; font-weight: bold; text-align: right; opacity: 0.9; margin-bottom: 25px; }
+.card-number { font-family: 'Courier New', Courier, monospace; font-size: 1.6em; letter-spacing: 2px; text-align: center; margin-bottom: 40px; line-height: 1.5; }
+.card-info { font-size: 0.95em; text-transform: uppercase; margin-top: auto; }
+.card-holder { display: block; margin-bottom: 15px; white-space: normal; overflow: visible; text-overflow: clip; text-align: left; font-size: 1.1em; }
+.card-valid-thru-expiry { display: flex; align-items: center; justify-content: flex-end; }
+.card-valid-thru { font-size: 0.75em; line-height: 1.2; text-align: right; margin-right: 10px; }
+.card-expiry { font-size: 1.2em; }
 
-  display: flex; /* 내부 요소(핸들, 콘텐츠) 배치 */
-  flex-direction: column;
 
-  /* 초기 상태: 핸들 높이(예: 60px)만 보이도록 아래로 이동 */
-  transform: translateY(calc(100% - 60px));
-  transition: transform 0.4s ease-out; /* 부드러운 슬라이드 */
-}
-
-.bottom-sheet.active {
-  /* 활성 상태: 원래 위치로 올라옴 */
-  transform: translateY(0);
-}
-
-/* 시트 핸들 영역 */
-.sheet-handle {
-  min-height: 60px; /* 핸들 영역 높이 (고정) */
-  padding: 10px 20px;
-  display: flex;
-  flex-direction: column; /* 내부 요소 세로 배치 */
-  align-items: center; /* 가로 중앙 정렬 */
-  justify-content: center; /* 세로 중앙 정렬 (핸들바 기준) */
-  cursor: pointer;
-  border-bottom: 1px solid #eee; /* 내용과 구분선 */
-  flex-shrink: 0; /* 높이 줄어들지 않도록 */
-  box-sizing: border-box;
-}
-
-/* 핸들바 (선택적 시각 요소) */
-.handle-bar {
-  width: 40px;
-  height: 4px;
-  background-color: #d0d0d0;
-  border-radius: 2px;
-  margin-bottom: 8px; /* 아래 텍스트와의 간격 */
-}
-
-/* 닫혀있을 때 보이는 요약 정보 텍스트 */
-.peek-summary {
-    font-size: 0.9em;
-    color: #555;
-    font-weight: 500;
-}
-
-/* 시트 내용 영역 */
-.sheet-content {
-  padding: 20px 25px 30px 25px; /* 내부 패딩 (하단 여유 더 줌) */
-  overflow-y: auto; /* 내용이 많으면 스크롤 */
-  flex-grow: 1; /* 남은 공간 채우도록 */
-  font-family: sans-serif; /* 일반 글꼴 */
-  color: #333; /* 기본 글자색 */
-}
-
-.sheet-content h2 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 25px;
-  font-size: 1.4em;
-  color: #333;
-}
-
-.sheet-content h3 {
-  color: #e74c3c; /* 다른 강조색 */
-  margin-bottom: 15px;
-  text-align: center;
-  font-size: 1.7em;
-  font-weight: 600;
-}
-
-.sheet-content ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-.sheet-content li {
-  background-color: #f8f9fa;
-  margin-bottom: 10px;
-  padding: 12px 15px;
-  border-radius: 6px;
-  border-left: 4px solid #e74c3c;
-  font-size: 1.05em;
-}
-
-.sheet-content .calories-sheet,
-.sheet-content .location-sheet {
+/* 카드 하단 힌트 스타일 다시 추가 */
+.peek-hint-bottom {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    width: 100%;
     text-align: center;
-    font-size: 0.95em;
-    color: #666;
-    margin-top: 15px;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.85);
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    font-family: sans-serif;
+    pointer-events: none; /* 힌트 텍스트가 카드 클릭 방해하지 않도록 */
 }
-
-/* --- 기존 카드 관련 CSS 제거 --- */
-/* .credit-card-ticket { ... } */
-/* .card-design-elements { ... } */
-/* .peek-hint-bottom { ... } */
+.credit-card-ticket.active .peek-hint-bottom {
+    opacity: 0; /* 활성 시 숨김 */
+}
