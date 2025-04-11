@@ -18,7 +18,7 @@
   width: 400px; height: 640px;
   /* ... (카드 디자인 스타일 동일) ... */
   border-radius: 18px; background: linear-gradient(160deg, #6a11cb, #2575fc); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); overflow: hidden; cursor: pointer; color: white; font-family: 'Arial', sans-serif;
-  transform: translate(-50%, calc(50vh - 580px)); /* 패널 위로 살짝 보이도록 */
+  transform: translate(-50%, calc(17vh - 20px)); /* 패널 위로 살짝 보이도록 */
   opacity: 1; /* 다시 보이도록 */
   visibility: visible; /* 다시 보이도록 */
   /* --------------------------------------- */
