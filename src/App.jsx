@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import DinnerTicket from './components/DinnerTicket'; // DinnerTicket 컴포넌트 임포트
-import './App.css'; // App 전용 CSS
+// DinnerTicket을 BottomSheet로 이름 변경해도 좋지만, 일단 그대로 사용
+import DinnerTicket from './components/DinnerTicket';
+import './App.css';
 
 function App() {
   const [dinnerMenu, setDinnerMenu] = useState(null);
@@ -13,11 +14,11 @@ function App() {
         // --- 임시(더미) 데이터 사용 ---
         await new Promise(resolve => setTimeout(resolve, 1000));
         const dummyMenuData = {
-          date: '2025-04-11', // 오늘 날짜 또는 해당 날짜
-          mainCourse: '김치볶음밥 & 계란후라이',
-          sideDishes: ['유부장국', '콘샐러드', '깍두기'],
-          location: '본관 구내식당',
-          calories: '약 680kcal'
+          date: '2025-04-12', // 현재 날짜 또는 해당 날짜
+          mainCourse: '소불고기 덮밥',
+          sideDishes: ['맑은 콩나물국', '배추김치', '마카로니 샐러드', '과일 (사과)'],
+          location: '교직원 식당',
+          calories: '약 720kcal'
         };
         setDinnerMenu(dummyMenuData);
         // ------------------------------------
@@ -40,33 +41,16 @@ function App() {
         {loading && <span style={{ fontSize: '0.8em', marginLeft: '10px' }}>(로딩중...)</span>}
       </header>
 
-      {/* --- 메인 화면 영역 --- */}
+      {/* 메인 영역: 간단한 안내 또는 다른 콘텐츠 */}
       <main className="App-main">
-        {loading ? (
-          <p>메뉴 정보를 불러오는 중...</p>
-        ) : dinnerMenu ? (
-          // --- 메인 화면에 메뉴 상세 정보 표시 ---
-          <div className="menu-details-main">
-            <h2>{dinnerMenu.date} 석식 메뉴</h2>
-            <h3>{dinnerMenu.mainCourse}</h3>
-            <ul>
-              {dinnerMenu.sideDishes.map((dish, index) => (
-                <li key={index}>{dish}</li>
-              ))}
-            </ul>
-            {dinnerMenu.calories && <p className="calories-main">열량: {dinnerMenu.calories}</p>}
-            {dinnerMenu.location && <p className="location-main">장소: {dinnerMenu.location}</p>}
-          </div>
-          // ------------------------------------
-        ) : (
-          <p>오늘의 석식 메뉴 정보가 없습니다.</p>
-        )}
+        {!loading && !dinnerMenu && <p>오늘은 석식 정보가 없습니다.</p>}
+        {!loading && dinnerMenu && <p style={{ marginTop: '30px', color: '#777' }}>식권 정보를 확인하려면 하단을 탭하세요.</p>}
+        {/* 필요하다면 여기에 다른 내용 추가 */}
+        {/* <div style={{height: '600px', background: '#eee', marginTop: '20px'}}>스크롤 테스트용</div> */}
       </main>
-      {/* -------------------- */}
 
-
-      {/* DinnerTicket은 로딩 완료 후 메뉴가 있을 때만 렌더링, 날짜 정보 전달 */}
-      {!loading && dinnerMenu && <DinnerTicket date={dinnerMenu.date} location={dinnerMenu.location} />}
+      {/* DinnerTicket(BottomSheet) 컴포넌트: 로딩 끝나고 메뉴 있을 때 렌더링 */}
+      {!loading && dinnerMenu && <DinnerTicket menuData={dinnerMenu} />}
 
     </div>
   );
