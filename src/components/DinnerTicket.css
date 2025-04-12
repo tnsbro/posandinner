@@ -2,41 +2,26 @@
 
 /* 배경 오버레이 스타일 */
 .backdrop {
-  /* ... (이전과 동일) ... */
-  background-color: rgba(0, 0, 0, 0.8);
-  z-index: 1001; /* 패널(1000)과 활성 카드(1002) 사이 */
-  /* ... (나머지 동일) ... */
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; opacity: 0; visibility: hidden; transition: opacity 0.5s ease-out, visibility 0s linear 0.5s;
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  /* opacity/visibility 는 Framer Motion이 제어 */
+  z-index: 1001;
 }
-.backdrop.active { opacity: 1; visibility: visible; transition-delay: 0s; }
-
 
 /* 카드 스타일 */
 .credit-card-ticket {
   position: fixed;
-  top: 50%; left: 50%;
-  width: 400px; height: 640px;
-  /* ... (카드 디자인 스타일 동일) ... */
-  border-radius: 18px; background: linear-gradient(160deg, #6a11cb, #2575fc); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); overflow: hidden; cursor: pointer; color: white; font-family: 'Arial', sans-serif;
-  transform: translate(-50%, calc(17vh - 20px)); /* 패널 위로 살짝 보이도록 */
-  opacity: 1; /* 다시 보이도록 */
-  visibility: visible; /* 다시 보이도록 */
-  /* --------------------------------------- */
-
-  /* --- Z-index 설정 --- */
-  z-index: 999; /* 초기 상태: 패널(1000)보다 아래 */
-  /* ----------------- */
-
-  /* 애니메이션 */
-  transition: transform 0.5s ease-out; /* z-index는 즉시 변경되므로 transition 불필요 */
+  top: 50%; /* Y 위치는 Framer Motion의 style.y 로 제어 */
+  left: 50%;
+  width: 280px;
+  height: 640px;
+  /* ... (디자인 스타일 유지) ... */
+  border-radius: 18px; background: linear-gradient(160deg, #6a11cb, #2575fc); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); overflow: hidden; cursor: grab; z-index: 999; color: white; font-family: 'Arial', sans-serif;
+  transform: translateX(-50%); /* 가로 중앙 정렬만 CSS 유지 */
 }
+.credit-card-ticket:active { cursor: grabbing; }
+.credit-card-ticket.active { z-index: 1002; cursor: default; }
 
-.credit-card-ticket.active {
-  /* 활성 상태 (중앙) */
-  transform: translate(-50%, -50%);
-  cursor: default;
-  z-index: 1002; /* 활성 상태: 모든 요소(배경 1001 포함) 위에 */
-}
 
 /* --- 카드 디자인 요소 스타일 (동일) --- */
 /* ... */

@@ -28,6 +28,10 @@ function App() {
       }
     };
     fetchMenu();
+    console.log("Fetching menu...");
+    fetchMenu().then(() => {
+        console.log("Loading finished, menu data:", dinnerMenu); // dinnerMenu 상태 확인
+    });
   }, []);
 
   return (
