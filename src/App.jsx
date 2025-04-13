@@ -64,22 +64,7 @@ function App() {
       </main>
 
       {/* DinnerTicket에 날짜와 위치 정보 전달 */}
-      {!loading && dinnerMenu && (
-        <DinnerTicket 
-          date={dinnerMenu.date} 
-          location={dinnerMenu.location}
-          isParentOpen={isTicketOpen}
-          onOpenChange={setIsTicketOpen}
-          onOpacityChange={setBackdropOpacity}
-        />
-      )}
-      <div 
-        className="bottom-panel"
-        style={{
-          backgroundColor: `rgba(255, 255, 255, ${1 - backdropOpacity * 1})`,
-          zIndex: 1003
-        }}
-      />
+      <DinnerTicket date={dinnerMenu?.date} location={dinnerMenu?.location} />
 
     </div>
   );

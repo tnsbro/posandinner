@@ -2,136 +2,107 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import './DinnerTicket.css';
 
-function DinnerTicket({ date, location, isParentOpen, onOpenChange, onOpacityChange }) {
+function DinnerTicket({ date, location }) {
   const [isOpen, setIsOpen] = useState(false);
   const cardHeight = 640;
-  const closedYCalcString = '17vh - 20px';
   const y = useMotionValue(0);
+  const constraintsRef = useRef({
+    top: -cardHeight / 2,
+    bottom: window.innerHeight * 0.17 - 20
+  });
 
-  const openYPixelRef = useRef(-cardHeight / 2);
-  const closedYPixelRef = useRef(0);
-  const dragConstraintsRef = useRef({ top: -320, bottom: 0 });
-  const startDragY = useRef(0);
+  // 드래그 임계값 (화면 높이의 40%)
+  const OPEN_THRESHOLD = window.innerHeight * 0.4;
 
-  // 부모 상태와 동기화
+  // 투명도 계산 (카드 제외 전체 어두움)
+  const bgOpacity = useTransform(
+    y,
+    [constraintsRef.current.bottom, constraintsRef.current.top],
+    [0, 0.7]
+  );
+
+  // 흰색 판 색상 계산 (카드보다 위에 위치)
+  const panelColor = useTransform(
+    bgOpacity,
+    [0, 0.7],
+    ['rgba(255,255,255,1)', 'rgba(235,235,235,0)']
+  );
+
+  // 드래그 종료 핸들러 (확실한 열림 구현)
+  const handleDragEnd = (_, info) => {
+    const currentY = y.get();
+    const dragDistance = constraintsRef.current.bottom - currentY;
+    
+    // 확실한 열림 조건 (임계값 초과 또는 빠른 드래그)
+    const shouldOpen = dragDistance > OPEN_THRESHOLD || 
+                      Math.abs(info.velocity.y) > 1000;
+    
+    setIsOpen(shouldOpen);
+  };
+
+  // 애니메이션 제어
   useEffect(() => {
-    if (isParentOpen !== undefined) {
-      setIsOpen(isParentOpen);
-    }
-  }, [isParentOpen]);
-
-  // 상태 변경 시 부모에 알림
-  useEffect(() => {
-    onOpenChange?.(isOpen);
-  }, [isOpen, onOpenChange]);
-
-  useEffect(() => {
-    const calculateYValues = () => {
-      const vh = window.innerHeight / 100;
-      const calculatedClosedY = (vh * 17) - 20;
-      closedYPixelRef.current = calculatedClosedY;
-
-      dragConstraintsRef.current = {
-        top: openYPixelRef.current,
-        bottom: calculatedClosedY
-      };
-
-      if (!isOpen) {
-        y.set(closedYPixelRef.current);
-      }
-    };
-
-    calculateYValues();
-    window.addEventListener('resize', calculateYValues);
-    return () => window.removeEventListener('resize', calculateYValues);
-  }, [y, isOpen, cardHeight]);
-
-  useEffect(() => {
-    if (dragConstraintsRef.current.bottom === dragConstraintsRef.current.top && dragConstraintsRef.current.top === 0) {
-      return;
-    }
-    const targetY = isOpen ? dragConstraintsRef.current.top : dragConstraintsRef.current.bottom;
-    animate(y, targetY, {
+    animate(y, isOpen ? constraintsRef.current.top : constraintsRef.current.bottom, {
       type: "spring",
-      stiffness: 280,
-      damping: 30
+      stiffness: 350,
+      damping: 25,
+      restDelta: 0.1
     });
   }, [isOpen, y]);
 
-  const backdropOpacity = useTransform(
-    y,
-    [closedYPixelRef.current, openYPixelRef.current],
-    [0, 1]
-  );
-
-  // 투명도 변경 시 부모에 알림
+  // 리사이즈 핸들러
   useEffect(() => {
-    const unsubscribe = backdropOpacity.on("change", (latest) => {
-      onOpacityChange?.(latest);
-    });
-    return () => unsubscribe();
-  }, [backdropOpacity, onOpacityChange]);
-
-  const handleDrag = (event, info) => {
-    const constraints = dragConstraintsRef.current;
-    if (constraints.bottom === constraints.top && constraints.top === 0) {
-      return;
-    }
-    const newY = y.get() + info.delta.y;
-    const clampedY = Math.max(constraints.top, Math.min(constraints.bottom, newY));
-    y.set(clampedY);
-  };
-
-  const handleDragEnd = (event, info) => {
-    const currentY = y.get();
-    const midpoint = (openYPixelRef.current + closedYPixelRef.current) / 2;
-    setIsOpen(currentY < midpoint);
-  };
-
-  const closeSheet = () => setIsOpen(false);
+    const handleResize = () => {
+      constraintsRef.current.bottom = window.innerHeight * 0.17 - 20;
+      if (!isOpen) y.set(constraintsRef.current.bottom);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isOpen, y]);
 
   if (!date) return null;
 
-  const dummyCardNumber = "5890 **** **** 1234";
-  const validThru = "04/26";
-  const isBackdropVisible = isOpen;
-
   return (
     <>
+      {/* 전체 어두움 배경 */}
       <motion.div
-        className="backdrop"
-        onClick={closeSheet}
+        className="global-backdrop"
+        style={{ opacity: bgOpacity }}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* 흰색 판 (카드보다 위에 위치) */}
+      <motion.div
+        className="bottom-panel-override"
         style={{
-          opacity: backdropOpacity,
-          visibility: isBackdropVisible ? "visible" : "hidden",
-          pointerEvents: isBackdropVisible ? 'auto' : 'none'
+          backgroundColor: panelColor,
+          zIndex: 1003 // 카드(1002)보다 위
         }}
       />
 
+      {/* 카드 */}
       <motion.div
-        className={`credit-card-ticket ${isOpen ? 'active' : ''}`}
+        className="credit-card-ticket"
         drag="y"
+        dragConstraints={constraintsRef.current}
         dragElastic={0}
-        dragConstraints={dragConstraintsRef.current}
-        onDragStart={(event, info) => startDragY.current = y.get()}
-        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         style={{
           translateX: '-50%',
-          y: y,
-          touchAction: 'pan-y',
-          zIndex: 1002
+          y,
+          zIndex: 1002,
+          filter: 'brightness(1)' // 카드는 항상 밝게 유지
         }}
       >
         <div className="card-design-elements">
           <div className="card-chip"></div>
           <div className="card-logo">Meal Ticket</div>
-          <div className="card-number">{dummyCardNumber}</div>
+          <div className="card-number">5890 **** **** 1234</div>
           <div className="card-info">
             <span className="card-holder">{location || 'Cafeteria'}</span>
             <div className="card-valid-thru-expiry">
               <span className="card-valid-thru">VALID<br/>THRU</span>
-              <span className="card-expiry">{validThru}</span>
+              <span className="card-expiry">04/26</span>
             </div>
           </div>
         </div>
