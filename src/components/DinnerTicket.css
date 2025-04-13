@@ -2,22 +2,34 @@
 
 /* 배경 오버레이 스타일 */
 .backdrop {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background-color: rgba(0, 0, 0, 0.85);
-  /* opacity/visibility 는 Framer Motion이 제어 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh; /* 화면 전체를 커버 */
+  background-color: rgba(0, 0, 0, 1);
+  opacity: 0;
+  visibility: hidden;
   z-index: 1001;
+  transition: opacity 0.3s ease;
 }
 
 /* 카드 스타일 */
 .credit-card-ticket {
   position: fixed;
-  top: 50%; /* Y 위치는 Framer Motion의 style.y 로 제어 */
+  top: 50%;
   left: 50%;
   width: 280px;
   height: 640px;
-  /* ... (디자인 스타일 유지) ... */
-  border-radius: 18px; background: linear-gradient(160deg, #6a11cb, #2575fc); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); overflow: hidden; cursor: grab; z-index: 999; color: white; font-family: 'Arial', sans-serif;
-  transform: translateX(-50%); /* 가로 중앙 정렬만 CSS 유지 */
+  transform: translateX(-50%);
+  border-radius: 18px;
+  background: linear-gradient(160deg, #6a11cb, #2575fc);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  cursor: grab;
+  z-index: 1002; /* 카드는 배경보다 한 단계 위 */
+  color: white;
+  font-family: 'Arial', sans-serif;
 }
 .credit-card-ticket:active { cursor: grabbing; }
 .credit-card-ticket.active { z-index: 1002; cursor: default; }

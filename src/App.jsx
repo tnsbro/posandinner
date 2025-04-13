@@ -6,6 +6,8 @@ import './App.css';
 function App() {
   const [dinnerMenu, setDinnerMenu] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isTicketOpen, setIsTicketOpen] = useState(false);
+  const [backdropOpacity, setBackdropOpacity] = useState(0);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -62,8 +64,23 @@ function App() {
       </main>
 
       {/* DinnerTicket에 날짜와 위치 정보 전달 */}
-      {!loading && dinnerMenu && <DinnerTicket date={dinnerMenu.date} location={dinnerMenu.location} />}
-      <div className="bottom-panel"></div>
+      {!loading && dinnerMenu && (
+        <DinnerTicket 
+          date={dinnerMenu.date} 
+          location={dinnerMenu.location}
+          isParentOpen={isTicketOpen}
+          onOpenChange={setIsTicketOpen}
+          onOpacityChange={setBackdropOpacity}
+        />
+      )}
+      <div 
+        className="bottom-panel"
+        style={{
+          backgroundColor: `rgba(255, 255, 255, ${1 - backdropOpacity * 1})`,
+          zIndex: 1003
+        }}
+      />
+
     </div>
   );
 }
