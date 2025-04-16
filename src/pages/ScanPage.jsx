@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'; // Firestore 함수 import
 import { db } from '../firebaseConfig'; // Firestore 인스턴스 import
-
+import '../sch.css'
 // !!! 라이브러리 설치 후 import 방식 사용 권장 !!!
 // npm install html5-qrcode 또는 yarn add html5-qrcode
 // import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'; // 설치 후 이 라인 사용

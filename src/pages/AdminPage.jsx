@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import '../sch.css'
 
 function AdminPage() {
     const { logout } = useAuth();

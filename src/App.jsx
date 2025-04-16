@@ -42,53 +42,55 @@ function ProtectedRoute({ children, requiredRole }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
-        {/* 로그인 페이지 */}
-        <Route path="/login" element={<LoginPage />} />
-        {/* SignupPage 라우트 제거 또는 주석 처리 */}
-        <Route path="/signup" element={<SignupPage />} />
+    <div className="App" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <AuthProvider>
+        <Routes>
+          {/* 로그인 페이지 */}
+          <Route path="/login" element={<LoginPage />} />
+          {/* SignupPage 라우트 제거 또는 주석 처리 */}
+          <Route path="/signup" element={<SignupPage />} />
 
-        {/* 학생 대시보드 */}
-        <Route
-          path="/student"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* 학생 대시보드 */}
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* 교사 스캔 페이지 */}
-        <Route
-          path="/scan"
-          element={
-            <ProtectedRoute requiredRole="teacher">
-              <ScanPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* 교사 스캔 페이지 */}
+          <Route
+            path="/scan"
+            element={
+              <ProtectedRoute requiredRole="teacher">
+                <ScanPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* 관리자 페이지 */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <AdminPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* 관리자 페이지 */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* 기본 경로 처리 */}
-        <Route
-          path="/"
-          element={<HomeRedirect />} // HomeRedirect도 수정 필요
-        />
+          {/* 기본 경로 처리 */}
+          <Route
+            path="/"
+            element={<HomeRedirect />} // HomeRedirect도 수정 필요
+          />
 
-        {/* 404 Not Found */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </AuthProvider>
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </AuthProvider>
+    </div>
   );
 }
 

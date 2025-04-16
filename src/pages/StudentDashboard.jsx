@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
 import { useNavigate } from 'react-router-dom';
+import '../sch.css'
 
 // !!! 라이브러리 설치 후 import 방식 사용 권장 !!!
 // npm install easyqrcodejs 또는 yarn add easyqrcodejs
@@ -143,9 +144,9 @@ function StudentDashboard() {
         const classInfo = `${loggedInUserData.grade || '?'}-${loggedInUserData.classNum || '?'}`; // loggedInUserData로 변경
         const nonce = Math.random().toString(36).substring(2, 10); // 고유 식별값
         const qrData = {
-            studentUid: loggedInUserData.uid, // Firebase Auth UID 사용
+            id: loggedInUserData.email, // Firebase Auth UID 사용
             name: loggedInUserData.name || '이름없음', // loggedInUserData로 변경
-            classInfo: classInfo,
+            class: classInfo,
             date: todayDate,
             nonce: nonce // 재사용 방지용 랜덤 값
         };
