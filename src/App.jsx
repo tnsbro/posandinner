@@ -48,7 +48,7 @@ function App() {
         <Routes>
           {/* 로그인 페이지 */}
           <Route path="/login" element={<LoginPage />} />
-          {/* SignupPage 라우트 제거 또는 주석 처리 */}
+          
           <Route path="/signup" element={<SignupPage />} />
 
           {/* 학생 대시보드 */}

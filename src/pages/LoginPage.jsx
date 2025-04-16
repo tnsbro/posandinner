@@ -88,7 +88,7 @@ function LoginPage() {
         </form>
 
         {/* 회원가입 버튼 제거 또는 주석 처리 */}
-        {/* <button type="button" id="signUpButton" onClick={handleSignupClick}>회원가입 하기</button> */}
+        <button type="button" id="signUpButton" onClick={()=>{navigate("/signup")}}>회원가입 하기</button>
          <p className="mt-4 text-xs text-center text-gray-500">
             계정이 없으신가요? 관리자에게 문의하여 계정을 생성하세요.
           </p>
