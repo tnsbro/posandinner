@@ -6,7 +6,7 @@ import { getFirestore } from 'firebase/firestore';
 // Firebase 설정 (여기서 'YOUR_API_KEY' 등을 실제 값으로 변경하세요)
 const firebaseConfig = {
     apiKey: "AIzaSyDYTYu3KRhrdq2za6onCIiQO04v-2G20Uk",
-    authDomain: "posanticket.vercel.app",
+    authDomain: "posanbab.firebaseapp.com",
     projectId: "posanbab",
     storageBucket: "posanbab.firebasestorage.app",
     messagingSenderId: "275820343995",
