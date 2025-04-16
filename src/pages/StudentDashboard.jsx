@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
 import { useNavigate } from 'react-router-dom';
-import '../sch.css'
 
 // !!! 라이브러리 설치 후 import 방식 사용 권장 !!!
 // npm install easyqrcodejs 또는 yarn add easyqrcodejs

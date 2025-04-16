@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 // Firebase Auth 관련 import 제거 또는 주석 처리
 // import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import '../sch.css'
 
 function LoginPage() {
   const [email, setEmail] = useState('');

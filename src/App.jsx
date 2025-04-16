@@ -9,6 +9,7 @@ import ScanPage from './pages/ScanPage';
 import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
+import './sch.css'; // CSS 파일 import
 
 // 보호된 라우트 컴포넌트 수정
 function ProtectedRoute({ children, requiredRole }) {
