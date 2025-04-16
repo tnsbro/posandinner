@@ -1,193 +1,217 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-
-// !!! 라이브러리 설치 후 import 방식 사용 권장 !!!
-// npm install easyqrcodejs 또는 yarn add easyqrcodejs
-// import QRCode from 'easyqrcodejs'; // 설치 후 이 라인 사용
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
 
 function StudentDashboard() {
-    // useAuth 훅을 통해 현재 로그인한 사용자 정보 및 데이터를 가져옴
-    const { loggedInUserData, loading, logout } = useAuth(); // currentUser -> loggedInUserData로 변경
+    const { loggedInUserData, logout } = useAuth();
     const navigate = useNavigate();
+    const [generatedQrDataString, setGeneratedQrDataString] = useState(null);
+    const [isQrLibLoaded, setIsQrLibLoaded] = useState(false);
+    const [message, setMessage] = useState({ text: '', type: '' });
+    const [todayDate, setTodayDate] = useState('');
+    const [isQrUsed, setIsQrUsed] = useState(true);
+    const qrCodeRef = useRef(null);
+    const easyQRCodeInstanceRef = useRef(null);
 
-    // --- React State ---
-    const [generatedQrDataString, setGeneratedQrDataString] = useState(null); // 생성된 QR 데이터 (JSON 문자열)
-    const [isQrLibLoaded, setIsQrLibLoaded] = useState(false); // 라이브러리 로드 상태
-    const [message, setMessage] = useState({ text: '', type: '' }); // 메시지 상태
-    const [todayDate, setTodayDate] = useState(''); // 오늘 날짜 상태
-
-    // --- Refs ---
-    const qrCodeRef = useRef(null); // QR 코드가 그려질 div 참조
-    const easyQRCodeInstanceRef = useRef(null); // easyqrcodejs 인스턴스 참조
-
-    // --- 오늘 날짜 계산 함수 ---
     const getTodayKSTString = () => {
         const today = new Date();
-        const kstOffsetMinutes = 9 * 60;
-        const kstTime = new Date(today.getTime() + (kstOffsetMinutes * 60 * 1000));
-        const year = kstTime.getUTCFullYear();
-        const month = String(kstTime.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(kstTime.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const kstTime = new Date(today.getTime() + kstOffset);
+        return kstTime.toISOString().split('T')[0];
     };
 
-    // --- 컴포넌트 마운트 시 라이브러리 로드 및 날짜 설정 ---
+    const checkAndResetQrUsage = async () => {
+        if (!loggedInUserData) return;
+        const userDocRef = doc(db, 'users', loggedInUserData.uid);
+        try {
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+                setMessage({ text: '사용자 데이터를 찾을 수 없습니다.', type: 'error' });
+                return;
+            }
+            const data = userDoc.data();
+            const lastUsedDate = data.lastUsedDate || '';
+            const isUsedToday = data.dinnerUsed && lastUsedDate === todayDate;
+
+            if (lastUsedDate !== todayDate && data.dinnerUsed) {
+                await updateDoc(userDocRef, {
+                    dinnerUsed: false,
+                    lastUsedDate: null,
+                });
+                console.log('sch');
+                setIsQrUsed(false);
+            } else {
+                setIsQrUsed(isUsedToday);
+            }
+
+            if (isUsedToday) {
+                setGeneratedQrDataString(null);
+                setMessage({ text: '오늘 식권이 이미 사용되었습니다.', type: 'info' });
+            }
+        } catch (error) {
+            console.error('QR 사용 확인 오류:', error);
+            setMessage({ text: 'QR 사용 상태 확인 실패', type: 'error' });
+        }
+    };
+
     useEffect(() => {
         const kstDate = getTodayKSTString();
         setTodayDate(kstDate);
 
-        // EasyQRCodeJS 로드 (CDN)
-        const easyQRCodeScriptId = 'easyqrcode-script';
-        if (!document.getElementById(easyQRCodeScriptId)) {
-            console.log("EasyQRCodeJS 스크립트 로딩 시도 (Student)...");
-
+        const scriptId = 'easyqrcode-script';
+        if (!document.getElementById(scriptId)) {
             const script = document.createElement('script');
-            script.id = easyQRCodeScriptId;
-            script.src = "https://cdn.jsdelivr.net/npm/easyqrcodejs@4.4.13/dist/easy.qrcode.min.js";
-            script.onload = () => {
-                console.log("✅ EasyQRCodeJS 스크립트 로드 완료 (Student).");
-                if (typeof window.QRCode !== 'undefined') setIsQrLibLoaded(true);
-                else console.error("❌ window.QRCode 객체 찾을 수 없음 (Student).");
-            };
-            script.onerror = () => {
-                console.error("❌ EasyQRCodeJS 스크립트 로딩 실패 (Student).");
-                setMessage({ text: 'QR 라이브러리 로드 실패.', type: 'error' });
-            };
+            script.id = scriptId;
+            script.src = 'https://cdn.jsdelivr.net/npm/easyqrcodejs@4.4.13/dist/easy.qrcode.min.js';
+            script.onload = () => setIsQrLibLoaded(true);
+            script.onerror = () => setMessage({ text: 'QR 라이브러리 로드 실패', type: 'error' });
             document.head.appendChild(script);
-        } else if (typeof window.QRCode !== 'undefined') {
+        } else if (window.QRCode) {
             setIsQrLibLoaded(true);
         }
-    }, []);
 
-    // --- 날짜 변경 감지 및 상태 초기화 ---
+        if (loggedInUserData) {
+            checkAndResetQrUsage();
+        }
+    }, [loggedInUserData, todayDate]);
+
     useEffect(() => {
         const interval = setInterval(() => {
             const currentKstDate = getTodayKSTString();
-            if (currentKstDate !== todayDate && todayDate) {
-                console.log(`날짜 변경 감지 (Student): ${todayDate} -> ${currentKstDate}. 상태 초기화.`);
+            if (currentKstDate !== todayDate) {
                 setTodayDate(currentKstDate);
-                setGeneratedQrDataString(null); // QR 데이터 초기화
-                setMessage({ text: '날짜가 변경되었습니다. QR코드를 다시 생성해주세요.', type: 'info' });
+                setGeneratedQrDataString(null);
+                setIsQrUsed(false);
+                setMessage({ text: '새로운 날짜로 QR 코드가 초기화되었습니다.', type: 'info' });
                 if (qrCodeRef.current) qrCodeRef.current.innerHTML = 'QR 코드가 여기에 표시됩니다.';
                 easyQRCodeInstanceRef.current = null;
             }
-        }, 60 * 1000);
+        }, 60000);
         return () => clearInterval(interval);
-    }, [todayDate]); // todayDate 상태에 의존
+    }, [todayDate]);
 
-    // --- QR 코드 생성 로직 ---
     useEffect(() => {
-        // 라이브러리 로드 완료, QR 데이터 존재, DOM 요소 준비 완료 시 실행
-        if (isQrLibLoaded && generatedQrDataString && qrCodeRef.current) {
-            console.log("QR 코드 생성 effect 실행 (Student). 데이터:", generatedQrDataString);
-            // !!! import 방식 사용 시 `window.QRCode` 대신 `QRCode` 사용 !!!
-            const QRLibrary = window.QRCode; // CDN 사용 시
-
-            if (typeof QRLibrary === 'undefined') {
-                setMessage({ text: '오류: QR 코드 라이브러리 사용 불가', type: 'error' }); return;
-            }
+        if (isQrLibLoaded && generatedQrDataString && qrCodeRef.current && !isQrUsed) {
+            qrCodeRef.current.innerHTML = '';
             try {
-                qrCodeRef.current.innerHTML = ''; // 기존 내용 삭제
-                // 새 인스턴스 생성
-                easyQRCodeInstanceRef.current = new QRLibrary(qrCodeRef.current, {
-                    text: generatedQrDataString, // JSON 문자열 전달
-                    width: 200, height: 200,
-                    colorDark: "#000000", colorLight: "#ffffff",
-                    correctLevel: QRLibrary.CorrectLevel.M // 에러 보정 레벨
+                easyQRCodeInstanceRef.current = new window.QRCode(qrCodeRef.current, {
+                    text: generatedQrDataString,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: window.QRCode.CorrectLevel.M,
                 });
-                console.log("EasyQRCodeJS 인스턴스 생성/업데이트 완료 (Student)");
+                setMessage({ text: 'QR 코드가 생성되었습니다. 스캔해주세요.', type: 'success' });
             } catch (e) {
-                console.error("EasyQRCodeJS QR 코드 생성 오류 (Student):", e);
-                setMessage({ text: `오류: QR 코드 생성 실패 (${e.message})`, type: 'error' });
-                if (qrCodeRef.current) qrCodeRef.current.innerHTML = 'QR 생성 오류';
+                console.error('QR 코드 생성 오류:', e);
+                setMessage({ text: `QR 코드 생성 실패: ${e.message}`, type: 'error' });
+                qrCodeRef.current.innerHTML = 'QR 생성 오류';
             }
-        } else if (!generatedQrDataString && qrCodeRef.current) {
-             // 데이터가 없을 때 초기화
-             qrCodeRef.current.innerHTML = 'QR 코드가 여기에 표시됩니다.';
-             easyQRCodeInstanceRef.current = null;
+        } else if (qrCodeRef.current) {
+            qrCodeRef.current.innerHTML = isQrUsed ? '오늘 식권 사용됨' : 'QR 코드가 여기에 표시됩니다.';
         }
-    }, [isQrLibLoaded, generatedQrDataString]); // 의존성: 라이브러리 로드 상태, QR 데이터
+        console.log(isQrUsed)
+    }, [isQrLibLoaded, generatedQrDataString, isQrUsed]);
 
-    // --- QR 생성 버튼 클릭 핸들러 ---
-    const handleGenerateClick = () => {
-        const currentKstDate = getTodayKSTString();
-        if (currentKstDate !== todayDate) {
-             setMessage({ text: '날짜가 변경되었습니다. 페이지를 새로고침하거나 잠시 후 다시 시도하세요.', type: 'error' });
-             return;
-        }
-
-        // 로그인 정보 및 사용자 데이터 확인
-        if (!loggedInUserData) { // loggedInUserData로 변경
-            setMessage({ text: '오류: 사용자 정보를 불러올 수 없습니다.', type: 'error' });
+    const handleGenerateClick = async () => {
+        if (!loggedInUserData) {
+            setMessage({ text: '사용자 정보를 불러올 수 없습니다.', type: 'error' });
             return;
         }
-
-        // 석식 신청 및 승인 여부 확인
-        if (!loggedInUserData.dinnerApplied) { // loggedInUserData로 변경
+        if (!loggedInUserData.dinnerApplied) {
             setMessage({ text: '석식을 신청하지 않았습니다.', type: 'info' });
             return;
         }
-        if (!loggedInUserData.dinnerApproved) { // loggedInUserData로 변경
-            setMessage({ text: '석식이 아직 승인되지 않았습니다. 관리자에게 문의하세요.', type: 'info' });
+        if (!loggedInUserData.dinnerApproved) {
+            setMessage({ text: '석식이 승인되지 않았습니다.', type: 'info' });
+            return;
+        }
+        if (isQrUsed) {
+            setMessage({ text: '오늘 식권이 이미 사용되었습니다.', type: 'info' });
             return;
         }
 
-        // 이미 생성된 경우
-        if (generatedQrDataString) {
-            setMessage({ text: '오늘 식권 QR코드가 이미 생성되어 있습니다.', type: 'info' });
-            return;
-        }
-
-        // *** QR 데이터 생성 (JSON 형식) ***
-        const classInfo = `${loggedInUserData.grade || '?'}-${loggedInUserData.classNum || '?'}`; // loggedInUserData로 변경
-        const nonce = Math.random().toString(36).substring(2, 10); // 고유 식별값
+        const classInfo = `${loggedInUserData.grade || '?'}-${loggedInUserData.classNum || '?'}`;
+        const nonce = Math.random().toString(36).substring(2, 10);
         const qrData = {
-            id: loggedInUserData.email, // Firebase Auth UID 사용
-            name: loggedInUserData.name || '이름없음', // loggedInUserData로 변경
-            class: classInfo,
+            email: loggedInUserData.email,
+            name: loggedInUserData.name || '이름없음',
+            classInfo: classInfo,
             date: todayDate,
-            nonce: nonce // 재사용 방지용 랜덤 값
+            nonce: nonce,
         };
-
-        const qrString = JSON.stringify(qrData); // JSON 문자열로 변환
-
-        console.log("QR 생성 요청 (JSON):", qrString);
-        setGeneratedQrDataString(qrString); // 상태 업데이트 -> useEffect 트리거
-        setMessage({ text: 'QR 코드가 생성되었습니다. 스캔해주세요.', type: 'success' });
+        const qrString = JSON.stringify(qrData);
+        setGeneratedQrDataString(qrString);
     };
 
-    // --- 로그아웃 처리 ---
     const handleLogout = async () => {
         try {
             await logout();
-            navigate('/login'); // 로그인 페이지로 이동
+            navigate('/login');
         } catch (error) {
-            console.error("로그아웃 오류:", error);
+            console.error('로그아웃 오류:', error);
             setMessage({ text: '로그아웃 실패', type: 'error' });
         }
     };
 
-    // 로딩 중일 때 UI 처리
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center">
-                <div>사용자 정보를 로딩 중...</div>
-            </div>
-        );
+    if (!loggedInUserData) {
+        return <div className="p-4 text-center">로그인 후 이용해주세요.</div>;
     }
 
     return (
-        <div>
-            <h2>학생 대시보드</h2>
-            <button onClick={handleGenerateClick}>QR 코드 생성</button>
-            <div ref={qrCodeRef}>QR 코드가 여기에 표시됩니다.</div>
-            <button onClick={handleLogout}>로그아웃</button>
-            {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
-            )}
+        <div className="container mx-auto p-4 max-w-md">
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold text-gray-800">학생 대시보드</h1>
+                <button
+                    onClick={handleLogout}
+                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                >
+                    로그아웃
+                </button>
+            </div>
+            <p className="text-center text-sm text-gray-500 mb-4">오늘: {todayDate}</p>
+            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h2 className="text-xl font-semibold mb-3 text-gray-700">내 정보</h2>
+                <p>이메일: {loggedInUserData.email || 'N/A'}</p>
+                <p>이름: {loggedInUserData.name || 'N/A'}</p>
+                <p>학년/반: {loggedInUserData.grade || '?'}학년 {loggedInUserData.classNum || '?'}반</p>
+                <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
+                <p className={loggedInUserData.dinnerApproved ? 'text-green-600' : 'text-red-600'}>
+                    석식 승인: {loggedInUserData.dinnerApproved ? '승인됨' : '미승인'}
+                </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-semibold mb-3 text-gray-700">식권 QR 코드</h2>
+                {loggedInUserData.dinnerApplied && loggedInUserData.dinnerApproved && !isQrUsed && !loggedInUserData.dinnerUsed ? (
+                    <>
+                        <button
+                            onClick={handleGenerateClick}
+                            disabled={!isQrLibLoaded || generatedQrDataString}
+                            className={`w-full py-2 rounded ${!isQrLibLoaded || generatedQrDataString
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                }`}
+                        >
+                            {generatedQrDataString ? 'QR 코드 생성됨' : 'QR 코드 생성'}
+                        </button>
+                        <div
+                            ref={qrCodeRef}
+                            className="h-52 flex items-center justify-center border rounded bg-gray-50 mt-4"
+                        />
+                    </>
+                ) : (
+                    <p className="text-red-600 text-center">
+                        {isQrUsed
+                            ? '오늘 식권이 이미 사용되었습니다.'
+                            : loggedInUserData.dinnerApplied
+                                ? '오늘 식권이 이미 사용되었습니다.'
+                                : '석식을 신청하지 않았습니다.'}
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
