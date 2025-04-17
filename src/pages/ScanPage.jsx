@@ -1,604 +1,375 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-
 import { useAuth } from '../contexts/AuthContext';
-
 import { useNavigate } from 'react-router-dom';
-
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-
 import { db } from '../firebaseConfig';
 
-
-
 function ScanPage() {
-
   const { loggedInUserData, logout } = useAuth();
-
   const navigate = useNavigate();
-
   const [scanResult, setScanResult] = useState('');
-
   const [scanError, setScanError] = useState('');
-
   const [isScanning, setIsScanning] = useState(false);
-
   const [todayDate, setTodayDate] = useState('');
-
   const [isLibraryLoaded, setIsLibraryLoaded] = useState(false);
-
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const [isInitializing, setIsInitializing] = useState(false);
   const html5QrCodeScannerRef = useRef(null);
-
   const qrReaderId = 'qr-reader-teacher';
+  const cleanupRef = useRef(false);
 
-  const qrContainerRef = useRef(null);
+  // Check for debug mode (e.g., ?debug=true in URL)
+  const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
 
-
-
+  // Get KST date string
   const getTodayKSTString = useCallback(() => {
-
     const today = new Date();
-
     const kstOffset = 9 * 60 * 60 * 1000;
-
     const kstTime = new Date(today.getTime() + kstOffset);
-
     return kstTime.toISOString().split('T')[0];
-
   }, []);
 
-
-
-  const verifyAndMarkUsage = async (qrData) => {
-
-    console.log('사용 확인 및 기록 시도:', qrData);
-
-    try {
-
-      const usersRef = collection(db, 'users');
-
-      const q = query(usersRef, where('email', '==', qrData.email));
-
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-
-        setScanError('오류: 학생을 찾을 수 없습니다.');
-
-        return false;
-
-      }
-
-      const userDoc = querySnapshot.docs[0];
-
-      const userData = userDoc.data();
-
-      const userDocRef = doc(db, 'users', userDoc.id);
-
-
-
-      if (!userData.dinnerApplied) {
-
-        setScanError(`오류: ${qrData.name} (${qrData.classInfo})은 석식을 신청하지 않았습니다.`);
-
-        return false;
-
-      }
-
-      if (!userData.dinnerApproved) {
-
-        setScanError(`오류: ${qrData.name} (${qrData.classInfo})의 석식이 승인되지 않았습니다.`);
-
-        return false;
-
-      }
-
-      if (userData.dinnerUsed && userData.lastUsedDate === todayDate) {
-
-        setScanError(`오류: ${qrData.name} (${qrData.classInfo})의 식권은 이미 사용되었습니다.`);
-
-        return false;
-
-      }
-
-
-
-      await updateDoc(userDocRef, {
-
-        dinnerUsed: true,
-
-        lastUsedDate: todayDate,
-
-      });
-
-      console.log('사용 기록 성공');
-
-      return true;
-
-    } catch (error) {
-
-      console.error('사용 확인/기록 오류:', error);
-
-      setScanError(`오류: 사용 처리 실패 (${error.message})`);
-
-      return false;
-
-    }
-
-  };
-
-
-
-  const stopScanner = useCallback(async () => {
-
-    console.log('stopScanner 호출됨');
-
-    const scannerInstance = html5QrCodeScannerRef.current;
-
-    if (scannerInstance && isScanning) {
-
-      try {
-
-        await scannerInstance.stop();
-
-        console.log('✅ QR 코드 스캐너 중지됨');
-
-        setIsScanning(false);
-
-      } catch (err) {
-
-        console.error('❌ 스캐너 중지 중 오류:', err);
-
-        setScanError(`스캐너 중지 오류: ${err.message}`);
-
-      }
-
-    } else {
-
-      setIsScanning(false);
-
-    }
-
-  }, [isScanning]);
-
-
-
-  const pauseScanner = useCallback(() => {
-
-    return new Promise((resolve) => {
-
-      setIsProcessing(true);
-
-      setTimeout(() => {
-
-        setIsProcessing(false);
-
-        resolve();
-
-      }, 1000); // 1초 대기
-
-    });
-
-  }, []);
-
-
-
-  const onScanSuccess = useCallback(
-
-    async (decodedText) => {
-
-      if (isProcessing) return;
-
-      console.log(`스캔된 텍스트: ${decodedText}`);
-
+  // Verify QR and mark usage in Firestore
+  const verifyAndMarkUsage = useCallback(
+    async (qrData) => {
+      console.log('사용 확인 및 기록 시도:', qrData);
       setScanResult('');
-
       setScanError('');
 
-
-
-      const currentKstDate = getTodayKSTString();
-
-      if (currentKstDate !== todayDate) {
-
-        setScanError('오류: 처리 중 날짜가 변경되었습니다.');
-
-        await pauseScanner();
-
-        return;
-
-      }
-
-
-
-      let qrData;
-
       try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', qrData.email));
+        const querySnapshot = await getDocs(q);
 
-        qrData = JSON.parse(decodedText);
-
-        if (!qrData.email || !qrData.name || !qrData.classInfo || !qrData.date || !qrData.nonce) {
-
-          throw new Error('QR 데이터에 필수 정보가 누락되었습니다.');
-
+        if (querySnapshot.empty) {
+          setScanError(`오류: ${qrData.name}(${qrData.classInfo}) 학생 정보를 찾을 수 없습니다.`);
+          return false;
         }
 
-        console.log('QR 데이터 파싱 성공:', qrData);
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        const userDocRef = doc(db, 'users', userDoc.id);
 
-      } catch (e) {
+        if (!userData.dinnerApplied) {
+          setScanError(`오류: ${qrData.name}(${qrData.classInfo}) 학생은 석식을 신청하지 않았습니다.`);
+          return false;
+        }
+        if (!userData.dinnerApproved) {
+          setScanError(`오류: ${qrData.name}(${qrData.classInfo}) 학생의 석식이 승인되지 않았습니다.`);
+          return false;
+        }
+        if (userData.dinnerUsed && userData.lastUsedDate === todayDate) {
+          setScanError(`오류: ${qrData.name}(${qrData.classInfo}) 학생의 식권은 오늘 이미 사용되었습니다.`);
+          return false;
+        }
 
-        console.warn('QR 데이터 파싱 오류:', e);
-
-        setScanError('오류: 유효하지 않은 QR 코드 형식입니다.');
-
-        await pauseScanner();
-
-        return;
-
+        await updateDoc(userDocRef, {
+          dinnerUsed: true,
+          lastUsedDate: todayDate,
+        });
+        console.log('사용 기록 성공:', qrData.email);
+        return true;
+      } catch (error) {
+        console.error('Firestore 오류:', error);
+        setScanError(`오류: 사용 처리 실패 (${error.message})`);
+        return false;
       }
-
-
-
-      if (qrData.date !== todayDate) {
-
-        setScanError(`오류: 오늘(${todayDate}) QR 코드가 아닙니다 (QR 날짜: ${qrData.date}).`);
-
-        await pauseScanner();
-
-        return;
-
-      }
-
-
-
-      const saveSuccess = await verifyAndMarkUsage(qrData);
-
-      if (saveSuccess) {
-
-        setScanResult(`인증 완료: ${qrData.classInfo} ${qrData.name} (이메일: ${qrData.email})`);
-
-      }
-
-      await pauseScanner();
-
     },
-
-    [todayDate, getTodayKSTString, pauseScanner, isProcessing]
-
+    [todayDate]
   );
 
-
-
-  const onScanFailure = useCallback((error) => {
-
-    console.debug('스캔 실패:', error);
-
+  // Pause scanning for 1 second
+  const pauseAfterScan = useCallback(() => {
+    return new Promise((resolve) => {
+      setIsProcessing(true);
+      setTimeout(() => {
+        setIsProcessing(false);
+        resolve();
+      }, 1000); // 1-second pause
+    });
   }, []);
 
-
-
-  const startScanner = useCallback(async () => {
-
-    if (!isLibraryLoaded || typeof window.Html5Qrcode === 'undefined') {
-
-      setScanError('오류: 스캐너 라이브러리가 로드되지 않았습니다.');
-
-      return;
-
-    }
-
-    if (isScanning) {
-
-      console.log('이미 스캔 중');
-
-      return;
-
-    }
-
-    if (!qrContainerRef.current) {
-
-      setScanError('오류: QR 스캐너 컨테이너를 찾을 수 없습니다.');
-
-      return;
-
-    }
-
-
-
-    setIsScanning(true);
-
-    setScanResult('');
-
-    setScanError('');
-
-
-
-    try {
-
-      if (!html5QrCodeScannerRef.current) {
-
-        html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: false });
-
+  // Stop scanner
+  const stopScanner = useCallback(async () => {
+    if (cleanupRef.current) return;
+    console.log('Stopping scanner...');
+    const scannerInstance = html5QrCodeScannerRef.current;
+    if (scannerInstance) {
+      try {
+        const state = await scannerInstance.getState();
+        if (state === 2) { // SCANNING
+          await scannerInstance.stop();
+          console.log('Scanner stopped successfully');
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Scanner stop error:', err);
+          setScanError(`스캐너 중지 오류: ${err.message}`);
+        }
+      } finally {
+        html5QrCodeScannerRef.current = null;
+        setIsScanning(false);
+        setIsInitializing(false);
+        const container = document.getElementById(qrReaderId);
+        if (container) container.innerHTML = '';
       }
-
-      const config = {
-
-        fps: 10,
-
-        qrbox: (w, h) => ({
-
-          width: Math.max(Math.floor(Math.min(w, h) * 0.3), 150),
-
-          height: Math.max(Math.floor(Math.min(w, h) * 0.3), 150),
-
-        }),
-
-        aspectRatio: 1.0,
-
-        showTorchButtonIfSupported: true,
-
-      };
-
-      await html5QrCodeScannerRef.current.start(
-
-        { facingMode: 'environment' },
-
-        config,
-
-        onScanSuccess,
-
-        onScanFailure
-
-      );
-
-      console.log('✅ QR 스캐너 시작됨');
-
-    } catch (err) {
-
-      console.error('카메라 시작 오류:', err);
-
-      let errorMessage = `카메라 시작 오류: ${err.message || err}. `;
-
-      if (err.name === 'NotAllowedError') errorMessage += '카메라 권한이 거부되었습니다.';
-
-      else if (err.name === 'NotFoundError') errorMessage += '카메라를 찾을 수 없습니다.';
-
-      else if (err.message.includes('not found')) errorMessage += 'QR 스캐너 요소를 찾을 수 없습니다.';
-
-      else errorMessage += '권한 및 설정을 확인하세요.';
-
-      setScanError(errorMessage);
-
+    } else {
       setIsScanning(false);
-
+      setIsInitializing(false);
     }
+  }, []);
 
-  }, [isLibraryLoaded, isScanning, onScanSuccess, onScanFailure]);
+  // Handle scan success
+  const onScanSuccess = useCallback(
+    async (decodedText) => {
+      if (isProcessing || cleanupRef.current) return;
+      console.log(`스캔 성공: ${decodedText}`);
+      setIsProcessing(true);
+      setScanResult('');
+      setScanError('');
 
+      try {
+        const currentKstDate = getTodayKSTString();
+        if (currentKstDate !== todayDate) {
+          setScanError('오류: 처리 중 날짜가 변경되었습니다.');
+          await stopScanner();
+          return;
+        }
 
+        const qrData = JSON.parse(decodedText);
+        if (!qrData.email || !qrData.name || !qrData.classInfo || !qrData.date || !qrData.nonce) {
+          setScanError('오류: 유효하지 않은 QR 코드 형식입니다.');
+          await pauseAfterScan();
+          return;
+        }
 
-  useEffect(() => {
+        if (qrData.date !== todayDate) {
+          setScanError(`오류: 이 QR 코드는 오늘(${todayDate}) 날짜가 아닙니다.`);
+          await pauseAfterScan();
+          return;
+        }
 
-    const kstDate = getTodayKSTString();
-
-    setTodayDate(kstDate);
-
-
-
-    const scriptId = 'html5qrcode-script';
-
-    if (!document.getElementById(scriptId)) {
-
-      const script = document.createElement('script');
-
-      script.id = scriptId;
-
-      script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-
-      script.onload = () => {
-
-        setIsLibraryLoaded(true);
-
-        console.log('✅ Html5Qrcode 라이브러리 로드됨');
-
-      };
-
-      script.onerror = () => {
-
-        setScanError('스캐너 라이브러리 로드 실패');
-
-        console.error('❌ Html5Qrcode 라이브러리 로드 실패');
-
-      };
-
-      document.head.appendChild(script);
-
-    } else if (typeof window.Html5Qrcode !== 'undefined') {
-
-      setIsLibraryLoaded(true);
-
-    }
-
-
-
-    return () => {
-
-      if (html5QrCodeScannerRef.current && isScanning) {
-
-        stopScanner();
-
+        const saveSuccess = await verifyAndMarkUsage(qrData);
+        if (saveSuccess) {
+          setScanResult(`✅ 인증 완료: ${qrData.classInfo} ${qrData.name}`);
+        }
+        await pauseAfterScan();
+      } catch (e) {
+        console.warn('QR 처리 오류:', e);
+        setScanError(`오류: QR 코드 처리 실패 (${e.message})`);
+        await pauseAfterScan();
       }
-
-    };
-
-  }, [stopScanner]);
-
-
-
-  useEffect(() => {
-
-    const interval = setInterval(() => {
-
-      const currentKstDate = getTodayKSTString();
-
-      if (currentKstDate !== todayDate) {
-
-        console.log(`날짜 변경 감지: ${todayDate} -> ${currentKstDate}`);
-
-        setTodayDate(currentKstDate);
-
-        setScanResult('');
-
-        setScanError('날짜가 변경되었습니다.');
-
-        if (isScanning) stopScanner();
-
-      }
-
-    }, 60000);
-
-    return () => clearInterval(interval);
-
-  }, [todayDate, isScanning, stopScanner]);
-
-
-
-  const handleLogout = async () => {
-
-    if (isScanning) await stopScanner();
-
-    try {
-
-      await logout();
-
-      navigate('/login');
-
-    } catch (error) {
-
-      console.error('로그아웃 오류:', error);
-
-      setScanError('로그아웃 실패');
-
-    }
-
-  };
-
-
-
-  if (!loggedInUserData || loggedInUserData.role !== 'teacher') {
-
-    return <div className="p-4 text-center">교사만 접근 가능합니다.</div>;
-
-  }
-
-
-
-  return (
-
-    <div className="container mx-auto p-4 max-w-lg">
-
-      <p className="text-center text-sm text-gray-500 mb-4">오늘 날짜 (KST): {todayDate}</p>
-
-      <div className="bg-white p-6 rounded-lg shadow-md">
-
-        <h2 className="text-xl font-semibold mb-3 text-gray-700">QR 코드 스캔</h2>
-
-        <div className="flex justify-center space-x-4 mb-4">
-
-          {!isScanning ? (
-
-            <button
-
-              onClick={startScanner}
-
-              disabled={!isLibraryLoaded || isProcessing}
-
-              className={`font-bold py-2 px-6 rounded ${!isLibraryLoaded || isProcessing
-
-                ? 'bg-gray-400 cursor-not-allowed'
-
-                : 'bg-green-500 hover:bg-green-700 text-white'
-
-                }`}
-
-            >
-
-              {!isLibraryLoaded ? '라이브러리 로딩중...' : isProcessing ? '처리 중...' : '카메라 스캔 시작'}
-
-            </button>
-
-          ) : (
-
-            <button
-
-              onClick={stopScanner}
-
-              disabled={isProcessing}
-
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded disabled:opacity-50"
-
-            >
-
-              {isProcessing ? '처리 중...' : '스캔 중지'}
-
-            </button>
-
-          )}
-
-        </div>
-
-        <div
-
-          id={qrReaderId}
-
-          ref={qrContainerRef}
-
-          className="w-full mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
-
-          style={{ maxWidth: '500px', minHeight: '250px', display: isScanning ? 'block' : 'none' }}
-
-        />
-
-        <div className="mt-4 text-center min-h-[3rem]">
-
-          {scanResult && (
-
-            <div className="p-3 rounded bg-green-100 text-green-800 font-semibold break-words">
-
-              {scanResult}
-
-            </div>
-
-          )}
-
-          {scanError && (
-
-            <div className="p-3 rounded bg-red-100 text-red-800 font-semibold break-words">
-
-              {scanError}
-
-            </div>
-
-          )}
-
-          {!isScanning && !scanResult && !scanError && (
-
-            <div className="text-gray-500">스캔을 시작하세요.</div>
-
-          )}
-
-        </div>
-
-      </div>
-
-    </div>
-
+    },
+    [isProcessing, todayDate, getTodayKSTString, stopScanner, verifyAndMarkUsage, pauseAfterScan]
   );
 
+  // Handle scan failure
+  const onScanFailure = useCallback((error) => {
+    // Only log significant errors in debug mode
+    if (isDebug && !error.message.includes('No QR code found')) {
+      console.debug('QR 인식 오류:', error);
+    }
+  }, [isDebug]);
+
+  // Start scanner with retry and fallback
+  const startScanner = useCallback(
+    async (attempt = 1, maxAttempts = 3, cameraConstraints = { facingMode: 'environment' }) => {
+      if (cleanupRef.current || !isLibraryLoaded || isProcessing) return;
+
+      const container = document.getElementById(qrReaderId);
+      if (!container) {
+        setScanError('오류: QR 스캐너 UI 영역을 찾을 수 없습니다.');
+        setIsInitializing(false);
+        return;
+      }
+
+      setScanResult('');
+      setScanError('');
+      setIsInitializing(true);
+
+      try {
+        if (html5QrCodeScannerRef.current) {
+          const state = await html5QrCodeScannerRef.current.getState();
+          if (state === 2) {
+            setIsInitializing(false);
+            return;
+          }
+        }
+
+        html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: isDebug });
+        const config = {
+          fps: 15,
+          qrbox: (w, h) => ({
+            width: Math.max(Math.min(w, h) * 0.75, 200),
+            height: Math.max(Math.min(w, h) * 0.75, 200),
+          }),
+          aspectRatio: 1.0,
+          showTorchButtonIfSupported: true,
+        };
+
+        console.log(`Attempting to start scanner (Attempt ${attempt}/${maxAttempts}) with constraints:`, cameraConstraints);
+        await html5QrCodeScannerRef.current.start(cameraConstraints, config, onScanSuccess, onScanFailure);
+
+        // Check if video stream is rendered
+        const videoElement = container.querySelector('video');
+        if (!videoElement) {
+          throw new Error('Video stream not rendered in DOM');
+        }
+
+        setIsScanning(true);
+        setIsInitializing(false);
+        console.log('Scanner started successfully');
+      } catch (err) {
+        console.error(`Scanner start error (Attempt ${attempt}):`, err);
+        if (attempt < maxAttempts && err.name === 'AbortError' && err.message.includes('Timeout starting video source')) {
+          console.log(`Retrying scanner start (Attempt ${attempt + 1})...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          return startScanner(attempt + 1, maxAttempts, cameraConstraints);
+        } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'environment') {
+          console.log('Falling back to front camera...');
+          return startScanner(1, maxAttempts, { facingMode: 'user' });
+        } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'user') {
+          console.log('Falling back to any camera...');
+          return startScanner(1, maxAttempts, {});
+        }
+
+        let errorMessage = `카메라 시작 오류: ${err.message || err}. `;
+        if (err.name === 'NotAllowedError') errorMessage += '카메라 권한이 필요합니다. 브라우저 설정에서 권한을 허용하세요.';
+        else if (err.name === 'NotFoundError') errorMessage += '카메라를 찾을 수 없습니다. 디바이스에 카메라가 있는지 확인하세요.';
+        else if (err.name === 'NotReadableError') errorMessage += '카메라 사용 불가. 다른 앱이 사용 중일 수 있습니다.';
+        else if (err.name === 'AbortError') errorMessage += '카메라 초기화 시간이 초과되었습니다. 새로고침하거나 다른 카메라를 시도하세요.';
+        else if (err.message.includes('Video stream not rendered')) errorMessage += '카메라 스트림을 렌더링할 수 없습니다. 브라우저를 새로고침하세요.';
+        setScanError(errorMessage);
+        setIsScanning(false);
+        setIsInitializing(false);
+        html5QrCodeScannerRef.current = null;
+      }
+    },
+    [isLibraryLoaded, isProcessing, onScanSuccess, onScanFailure, isDebug]
+  );
+
+  // Load library and cleanup
+  useEffect(() => {
+    cleanupRef.current = false;
+    const kstDate = getTodayKSTString();
+    setTodayDate(kstDate);
+
+    const scriptId = 'html5qrcode-script';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('Html5Qrcode library loaded');
+        setIsLibraryLoaded(true);
+      };
+      script.onerror = () => {
+        console.error('Failed to load Html5Qrcode library');
+        setScanError('스캐너 라이브러리 로드 실패. 네트워크를 확인하고 새로고침하세요.');
+      };
+      document.head.appendChild(script);
+    } else if (typeof window.Html5Qrcode !== 'undefined') {
+      console.log('Html5Qrcode library already loaded');
+      setIsLibraryLoaded(true);
+    }
+
+    return () => {
+      cleanupRef.current = true;
+      stopScanner();
+      const container = document.getElementById(qrReaderId);
+      if (container) container.innerHTML = '';
+    };
+  }, [stopScanner]);
+
+  // Auto-start scanner for teachers
+  useEffect(() => {
+    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing) {
+      console.log('Attempting to auto-start scanner');
+      startScanner();
+    }
+  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing]);
+
+  // Handle date change
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentKstDate = getTodayKSTString();
+      if (currentKstDate !== todayDate) {
+        setTodayDate(currentKstDate);
+        setScanError('날짜가 변경되었습니다.');
+        stopScanner();
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [todayDate, stopScanner, getTodayKSTString]);
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      await stopScanner();
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+      setScanError('로그아웃 실패.');
+    }
+  };
+
+  if (!loggedInUserData) {
+    return <div className="p-4 text-center">사용자 정보 로딩 중...</div>;
+  }
+
+  if (loggedInUserData.role !== 'teacher') {
+    return <div className="p-4 text-center">교사만 접근 가능합니다.</div>;
+  }
+
+  return (
+    <div className="container mx-auto p-4 max-w-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">식권 QR 스캐너 (교사용)</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-1 px-3 rounded"
+          disabled={isProcessing}
+        >
+          로그아웃
+        </button>
+      </div>
+      <p className="text-center text-sm text-gray-500 mb-4">오늘 날짜 (KST): {todayDate}</p>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-3 text-gray-700">QR 코드 스캔</h2>
+        <div
+          id={qrReaderId}
+          className="w-full mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
+          style={{ maxWidth: '500px', minHeight: '250px' }}
+        />
+        {!isLibraryLoaded && <p className="text-center text-gray-500 mt-4">스캐너 라이브러리 로딩 중...</p>}
+        {isLibraryLoaded && !isScanning && isInitializing && (
+          <p className="text-center text-gray-500 mt-4">카메라 초기화 중...</p>
+        )}
+        {isLibraryLoaded && !isScanning && !isInitializing && !scanError && (
+          <p className="text-center text-gray-500 mt-4">카메라 시작 준비 중...</p>
+        )}
+        <div className="mt-4 text-center min-h-[3rem]">
+          {scanResult && (
+            <div className="p-3 rounded bg-green-100 text-green-800 font-semibold break-words">
+              {scanResult}
+            </div>
+          )}
+          {scanError && (
+            <div className="p-3 rounded bg-red-100 text-red-800 font-semibold break-words">
+              {scanError}
+            </div>
+          )}
+          {!scanResult && !scanError && isScanning && !isProcessing && (
+            <div className="p-3 rounded bg-blue-100 text-blue-800 font-semibold">
+              QR 코드를 스캔하세요.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
-
-
 
 export default ScanPage;
