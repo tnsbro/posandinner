@@ -207,7 +207,7 @@ function StudentDashboard() {
                         {isQrUsed
                             ? '오늘 식권이 이미 사용되었습니다.'
                             : loggedInUserData.dinnerApplied
-                                ? '오늘 식권이 이미 사용되었습니다.'
+                                ? ''
                                 : '석식을 신청하지 않았습니다.'}
                     </p>
                 )}
