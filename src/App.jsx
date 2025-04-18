@@ -8,7 +8,7 @@ import ScanPage from './pages/ScanPage';
 import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
-import ChangePasswordPage from './pages/ChangePasswordPage'; // 새로 추가
+import ChangePasswordPage from './pages/ChangePasswordPage';
 import './sch.css';
 
 function ProtectedRoute({ children, requiredRole }) {
@@ -27,11 +27,10 @@ function ProtectedRoute({ children, requiredRole }) {
   }
 
   if (requiredRole && (!loggedInUserData.role || loggedInUserData.role !== requiredRole)) {
-    console.warn(`접근 시도 거부: 사용자 역할(${loggedInUserData?.role}), 필요 역할(${requiredRole})`);
-    if (loggedInUserData?.role === 'student') return <Navigate to="/student" replace />;
-    if (loggedInUserData?.role === 'teacher') return <Navigate to="/scan" replace />;
-    if (loggedInUserData?.role === 'admin') return <Navigate to="/admin" replace />;
-    return <Navigate to="/login" replace />;
+    console.warn(
+      `접근 시도 거부: 사용자 역할(${loggedInUserData?.role}), 필요 역할(${requiredRole}), 리디렉션 to /`
+    );
+    return <Navigate to="/" replace />;
   }
 
   return children;
