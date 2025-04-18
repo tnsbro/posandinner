@@ -1,7 +1,7 @@
 // src/App.jsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext'; // AuthContext import
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import LoginPage from './pages/LoginPage';
 import StudentDashboard from './pages/StudentDashboard';
@@ -11,104 +11,53 @@ import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
 import './sch.css'; // CSS 파일 import
 
-// 보호된 라우트 컴포넌트 수정
+// ProtectedRoute 컴포넌트는 그대로 둡니다. 수정할 필요 없습니다.
 function ProtectedRoute({ children, requiredRole }) {
-  // currentUser 대신 loggedInUserData 사용
   const { loggedInUserData, loading } = useAuth();
 
   if (loading) {
-    return <div>로딩 중...</div>; // 인증 상태 확인 중
+    // Loading state styled by sch.css .loading-container
+    return (
+        <div className="loading-container">
+             <div>데이터 로딩 중...</div>
+             {/* CSS에 로딩 스피너가 추가되어 있습니다 */}
+        </div>
+    );
   }
 
-  // loggedInUserData가 없으면 로그인되지 않은 상태
   if (!loggedInUserData) {
     return <Navigate to="/login" replace />;
   }
 
-  // 역할 확인 시 loggedInUserData.role 사용
   if (requiredRole && (!loggedInUserData.role || loggedInUserData.role !== requiredRole)) {
     console.warn(`접근 시도 거부: 사용자 역할(${loggedInUserData?.role}), 필요 역할(${requiredRole})`);
-    // 역할에 맞는 기본 페이지로 보내거나 접근 거부 페이지 표시
+    // Redirect based on existing role or to login
     if (loggedInUserData?.role === 'student') return <Navigate to="/student" replace />;
     if (loggedInUserData?.role === 'teacher') return <Navigate to="/scan" replace />;
     if (loggedInUserData?.role === 'admin') return <Navigate to="/admin" replace />;
-    // 역할 정보 없으면 로그인으로 (이 경우는 거의 없어야 함)
     return <Navigate to="/login" replace />;
   }
 
-  // 모든 조건 통과 시 자식 컴포넌트 렌더링
   return children;
 }
 
-
-function App() {
-  return (
-    <div className="App" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <AuthProvider>
-        <Routes>
-          {/* 로그인 페이지 */}
-          <Route path="/login" element={<LoginPage />} />
-          
-          <Route path="/signup" element={<SignupPage />} />
-
-          {/* 학생 대시보드 */}
-          <Route
-            path="/student"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 교사 스캔 페이지 */}
-          <Route
-            path="/scan"
-            element={
-              <ProtectedRoute requiredRole="teacher">
-                <ScanPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 관리자 페이지 */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 기본 경로 처리 */}
-          <Route
-            path="/"
-            element={<HomeRedirect />} // HomeRedirect도 수정 필요
-          />
-
-          {/* 404 Not Found */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </AuthProvider>
-    </div>
-  );
-}
-
+// HomeRedirect 컴포넌트도 그대로 둡니다. 수정할 필요 없습니다.
 function HomeRedirect() {
-  // currentUser 대신 loggedInUserData와 loading 사용
   const { loggedInUserData, loading } = useAuth();
 
   if (loading) {
-    return <div>로딩 중...</div>; // 로딩 중일 때 보여줄 내용
+     // Loading state styled by sch.css .loading-container
+     return (
+         <div className="loading-container">
+              <div>데이터 로딩 중...</div>
+         </div>
+     );
   }
 
-  // loggedInUserData 없으면 로그인 페이지로 리디렉션
   if (!loggedInUserData) {
     return <Navigate to="/login" replace />;
   }
 
-  // 사용자의 역할에 따른 리디렉션 처리
   if (loggedInUserData?.role === 'student') {
     return <Navigate to="/student" replace />;
   }
@@ -119,9 +68,63 @@ function HomeRedirect() {
     return <Navigate to="/admin" replace />;
   }
 
-  // 역할 정보가 없거나 예외적인 경우 로그인 페이지로 리디렉션
   console.warn("알 수 없는 사용자 역할 또는 데이터 로드 실패, 로그인 페이지로 이동:", loggedInUserData);
   return <Navigate to="/login" replace />;
+}
+
+
+function App() {
+  return (
+    // 최상위 div에서 inline style={{ display: 'flex', ... }} 제거
+    <div className="App"> 
+      <AuthProvider>
+        <Routes>
+          {/* 로그인 페이지 (이 페이지는 sch.css 대신 Tailwind를 사용하므로 변경 없음) */}
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* 회원가입 페이지 (이 페이지도 sch.css 레이아웃을 사용하려면 구조 수정 필요) */}
+          <Route path="/signup" element={<SignupPage />} />
+
+          {/* 보호된 라우트 - StudentDashboard, ScanPage, AdminPage는 내부에서 sch.css 클래스를 사용해야 함 */}
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/scan"
+            element={
+              <ProtectedRoute requiredRole="teacher">
+                <ScanPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 기본 경로 처리 - HomeRedirect는 loading 상태에서 sch.css 스타일 사용 */}
+          <Route
+            path="/"
+            element={<HomeRedirect />}
+          />
+
+          {/* 404 Not Found (NotFoundPage도 sch.css 스타일을 사용하려면 구조 수정 필요) */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </AuthProvider>
+    </div>
+  );
 }
 
 export default App;
