@@ -18,7 +18,7 @@ function ScanPage() {
   const qrReaderId = 'qr-reader-teacher';
   const cleanupRef = useRef(false);
 
-  // Check for debug mode (e.g., ?debug=true in URL)
+  // Debug mode check
   const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
 
   // Get KST date string
@@ -78,13 +78,28 @@ function ScanPage() {
     [todayDate]
   );
 
-  // Pause scanning for 1 second
-  const pauseAfterScan = useCallback(() => {
+  // Pause scanning for 1 second and temporarily stop scanner
+  const pauseAfterScan = useCallback(async () => {
     console.log('Pausing scan for 1 second...');
+    setIsProcessing(true);
+    if (html5QrCodeScannerRef.current) {
+      try {
+        const state = await html5QrCodeScannerRef.current.getState();
+        if (state === 2) { // SCANNING
+          await html5QrCodeScannerRef.current.pause();
+          console.log('Scanner paused during processing');
+        }
+      } catch (err) {
+        console.error('Pause error:', err);
+      }
+    }
     return new Promise((resolve) => {
-      setIsProcessing(true);
       setTimeout(() => {
         setIsProcessing(false);
+        if (html5QrCodeScannerRef.current) {
+          html5QrCodeScannerRef.current.resume();
+          console.log('Scanner resumed after 1-second pause');
+        }
         console.log('Scan pause ended. Ready for next scan.');
         resolve();
       }, 1000); // 1-second pause
@@ -128,7 +143,7 @@ function ScanPage() {
         console.log('Scan ignored: Scanner is processing or cleaning up.');
         return;
       }
-      console.log(`스캔 성공: ${decodedText}`);
+      console.log(`스캔 성공: ${decodedText} at ${new Date().toISOString()}`);
       setIsProcessing(true);
       setScanResult('');
       setScanError('');
@@ -205,7 +220,7 @@ function ScanPage() {
 
         html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: isDebug });
         const config = {
-          fps: 15, // FPS 유지: 스캔 빈도와 1초 지연은 별개로 관리
+          fps: 15,
           qrbox: (w, h) => ({
             width: Math.max(Math.min(w, h) * 0.75, 200),
             height: Math.max(Math.min(w, h) * 0.75, 200),
@@ -290,11 +305,11 @@ function ScanPage() {
 
   // Auto-start scanner for teachers
   useEffect(() => {
-    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing) {
+    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing && !isProcessing) {
       console.log('Attempting to auto-start scanner');
       startScanner();
     }
-  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing]);
+  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing, isProcessing]);
 
   // Handle date change
   useEffect(() => {
@@ -346,9 +361,15 @@ function ScanPage() {
         <h2 className="text-xl font-semibold mb-3 text-gray-700">QR 코드 스캔</h2>
         <div
           id={qrReaderId}
-          className="w-full mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
+          className="w-full mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden relative"
           style={{ maxWidth: '500px', minHeight: '250px' }}
-        />
+        >
+          {isProcessing && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-semibold">
+              처리 중...
+            </div>
+          )}
+        </div>
         {!isLibraryLoaded && <p className="text-center text-gray-500 mt-4">스캐너 라이브러리 로딩 중...</p>}
         {isLibraryLoaded && !isScanning && isInitializing && (
           <p className="text-center text-gray-500 mt-4">카메라 초기화 중...</p>
@@ -370,11 +391,6 @@ function ScanPage() {
           {!scanResult && !scanError && isScanning && !isProcessing && (
             <div className="p-3 rounded bg-blue-100 text-blue-800 font-semibold">
               QR 코드를 스캔하세요.
-            </div>
-          )}
-          {isProcessing && (
-            <div className="p-3 rounded bg-blue-100 text-blue-800 font-semibold">
-              처리 중입니다...
             </div>
           )}
         </div>
