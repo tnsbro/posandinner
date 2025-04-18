@@ -15,10 +15,9 @@ function StudentDashboard() {
     const qrCodeRef = useRef(null);
     const easyQRCodeInstanceRef = useRef(null);
 
-    // 수정된 getTodayKSTString: 명시적 YYYY-MM-DD 형식 보장
     const getTodayKSTString = () => {
         const today = new Date();
-        const kstOffset = 9 * 60 * 60 * 1000; // KST는 UTC+9
+        const kstOffset = 9 * 60 * 60 * 1000;
         const kstTime = new Date(today.getTime() + kstOffset);
         const year = kstTime.getUTCFullYear();
         const month = String(kstTime.getUTCMonth() + 1).padStart(2, '0');
@@ -28,7 +27,6 @@ function StudentDashboard() {
         return dateString;
     };
 
-    // QR 코드 컨테이너 정리 함수
     const clearQRCodeDisplay = () => {
         console.log("Clearing QR Code Display");
         if (easyQRCodeInstanceRef.current) {
@@ -40,7 +38,6 @@ function StudentDashboard() {
         setGeneratedQrDataString(null);
     };
 
-    // 초기 설정: 날짜 설정 및 QR 라이브러리 로드
     useEffect(() => {
         const kstDate = getTodayKSTString();
         setTodayDate(kstDate);
@@ -58,7 +55,6 @@ function StudentDashboard() {
         }
     }, []);
 
-    // 날짜 변경 감지: 1분마다 todayDate 업데이트
     useEffect(() => {
         const interval = setInterval(() => {
             const currentKstDate = getTodayKSTString();
@@ -71,7 +67,6 @@ function StudentDashboard() {
         return () => clearInterval(interval);
     }, [todayDate]);
 
-    // Firestore 데이터 초기화 로직: 날짜 기반 dinnerUsed 리셋
     useEffect(() => {
         if (
             loggedInUserData?.uid &&
@@ -82,13 +77,11 @@ function StudentDashboard() {
             const lastUsedDate = loggedInUserData.lastUsedDate.trim();
             const normalizedTodayDate = todayDate.trim();
 
-            // 디버깅 로그 추가
             console.log('Date Comparison:');
             console.log(`lastUsedDate: "${lastUsedDate}" (length: ${lastUsedDate.length})`);
             console.log(`todayDate: "${normalizedTodayDate}" (length: ${normalizedTodayDate.length})`);
             console.log(`Strict Equality (===): ${lastUsedDate === normalizedTodayDate}`);
 
-            // 날짜 형식 검증
             const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
             if (!dateFormatRegex.test(lastUsedDate)) {
                 console.warn(`Invalid lastUsedDate format: ${lastUsedDate}. Skipping reset.`);
@@ -100,7 +93,7 @@ function StudentDashboard() {
                 const userDocRef = doc(db, 'users', loggedInUserData.uid);
                 updateDoc(userDocRef, {
                     dinnerUsed: false,
-                    lastUsedDate: null, // 또는 normalizedTodayDate로 설정 가능
+                    lastUsedDate: null,
                 })
                     .then(() => {
                         console.log('Firestore reset successful.');
@@ -122,7 +115,6 @@ function StudentDashboard() {
         }
     }, [loggedInUserData?.uid, loggedInUserData?.lastUsedDate, loggedInUserData?.dinnerUsed, todayDate]);
 
-    // QR 코드 렌더링 로직
     useEffect(() => {
         console.log("QR Rendering Effect:", {
             isQrLibLoaded,
@@ -167,7 +159,6 @@ function StudentDashboard() {
         }
     }, [isQrLibLoaded, generatedQrDataString, loggedInUserData]);
 
-    // QR 코드 생성 버튼 핸들러
     const handleGenerateClick = async () => {
         if (!loggedInUserData) {
             setMessage({ text: '사용자 정보를 불러올 수 없습니다.', type: 'error' });
@@ -208,7 +199,6 @@ function StudentDashboard() {
         setGeneratedQrDataString(qrString);
     };
 
-    // 로그아웃 핸들러
     const handleLogout = async () => {
         try {
             await logout();
@@ -219,12 +209,10 @@ function StudentDashboard() {
         }
     };
 
-    // 로그인 안 된 경우 렌더링
     if (!loggedInUserData) {
         return <div className="p-4 text-center">로그인 후 이용해주세요.</div>;
     }
 
-    // 메인 렌더링
     return (
         <div className="container mx-auto p-4 max-w-md">
             <div className="flex justify-between items-center mb-4">
@@ -235,23 +223,22 @@ function StudentDashboard() {
                 >
                     로그아웃
                 </button>
+                <br/>
+                <br/>
+                <button
+                    onClick={() => navigate('/change-password')}
+                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                >
+                    비밀번호 변경
+                </button>
             </div>
             <p className="text-center text-sm text-gray-500 mb-4">오늘: {todayDate}</p>
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">내 정보</h2>
-                <p>이메일: {loggedInUserData.email || 'N/A'}</p>
                 <p>이름: {loggedInUserData.name || 'N/A'}</p>
                 <p>학년/반: {loggedInUserData.grade || '?'}학년 {loggedInUserData.classNum || '?'}반</p>
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
-                <p className={loggedInUserData.dinnerApproved ? 'text-green-600' : 'text-red-600'}>
-                    석식 승인: {loggedInUserData.dinnerApproved ? '승인됨' : '미승인'}
-                </p>
-                <p className={loggedInUserData.dinnerUsed === true ? 'text-red-600' : 'text-green-600'}>
-                    오늘 식권 사용됨: {loggedInUserData.dinnerUsed === true ? '예' : '아니오'}
-                </p>
-                <p className="text-gray-500">
-                    Last Used Date (DB): {loggedInUserData.lastUsedDate || '없음'}
-                </p>
+                {/* 비밀번호 변경 버튼 추가 */}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -261,11 +248,10 @@ function StudentDashboard() {
                         <button
                             onClick={handleGenerateClick}
                             disabled={!isQrLibLoaded || generatedQrDataString}
-                            className={`w-full py-2 rounded ${
-                                !isQrLibLoaded || generatedQrDataString
+                            className={`w-full py-2 rounded ${!isQrLibLoaded || generatedQrDataString
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-blue-500 hover:bg-blue-600 text-white'
-                            }`}
+                                }`}
                         >
                             {generatedQrDataString ? 'QR 코드 생성됨 (스캔 대기)' : 'QR 코드 생성'}
                         </button>
@@ -281,27 +267,14 @@ function StudentDashboard() {
                         {!loggedInUserData.dinnerApplied
                             ? '석식을 신청하지 않았습니다.'
                             : !loggedInUserData.dinnerApproved
-                            ? '석식이 승인되지 않았습니다.'
-                            : loggedInUserData.dinnerUsed === true
-                            ? '오늘 식권이 이미 사용되었습니다.'
-                            : 'QR 코드 표시 조건을 만족하지 않습니다.'}
+                                ? '석식이 승인되지 않았습니다.'
+                                : loggedInUserData.dinnerUsed === true
+                                    ? '오늘 식권이 이미 사용되었습니다.'
+                                    : 'QR 코드 표시 조건을 만족하지 않습니다.'}
                     </p>
                 )}
             </div>
 
-            {message.text && (
-                <div
-                    className={`mt-4 p-3 rounded text-center ${
-                        message.type === 'error'
-                            ? 'bg-red-100 text-red-700'
-                            : message.type === 'success'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-blue-100 text-blue-700'
-                    }`}
-                >
-                    {message.text}
-                </div>
-            )}
         </div>
     );
 }

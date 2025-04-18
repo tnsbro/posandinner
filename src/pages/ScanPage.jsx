@@ -80,10 +80,12 @@ function ScanPage() {
 
   // Pause scanning for 1 second
   const pauseAfterScan = useCallback(() => {
+    console.log('Pausing scan for 1 second...');
     return new Promise((resolve) => {
       setIsProcessing(true);
       setTimeout(() => {
         setIsProcessing(false);
+        console.log('Scan pause ended. Ready for next scan.');
         resolve();
       }, 1000); // 1-second pause
     });
@@ -122,7 +124,10 @@ function ScanPage() {
   // Handle scan success
   const onScanSuccess = useCallback(
     async (decodedText) => {
-      if (isProcessing || cleanupRef.current) return;
+      if (isProcessing || cleanupRef.current) {
+        console.log('Scan ignored: Scanner is processing or cleaning up.');
+        return;
+      }
       console.log(`스캔 성공: ${decodedText}`);
       setIsProcessing(true);
       setScanResult('');
@@ -164,12 +169,14 @@ function ScanPage() {
   );
 
   // Handle scan failure
-  const onScanFailure = useCallback((error) => {
-    // Only log significant errors in debug mode
-    if (isDebug && !error.message.includes('No QR code found')) {
-      console.debug('QR 인식 오류:', error);
-    }
-  }, [isDebug]);
+  const onScanFailure = useCallback(
+    (error) => {
+      if (isDebug && !error.message.includes('No QR code found')) {
+        console.debug('QR 인식 오류:', error);
+      }
+    },
+    [isDebug]
+  );
 
   // Start scanner with retry and fallback
   const startScanner = useCallback(
@@ -198,7 +205,7 @@ function ScanPage() {
 
         html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: isDebug });
         const config = {
-          fps: 15,
+          fps: 15, // FPS 유지: 스캔 빈도와 1초 지연은 별개로 관리
           qrbox: (w, h) => ({
             width: Math.max(Math.min(w, h) * 0.75, 200),
             height: Math.max(Math.min(w, h) * 0.75, 200),
@@ -210,7 +217,6 @@ function ScanPage() {
         console.log(`Attempting to start scanner (Attempt ${attempt}/${maxAttempts}) with constraints:`, cameraConstraints);
         await html5QrCodeScannerRef.current.start(cameraConstraints, config, onScanSuccess, onScanFailure);
 
-        // Check if video stream is rendered
         const videoElement = container.querySelector('video');
         if (!videoElement) {
           throw new Error('Video stream not rendered in DOM');
@@ -280,7 +286,7 @@ function ScanPage() {
       const container = document.getElementById(qrReaderId);
       if (container) container.innerHTML = '';
     };
-  }, [stopScanner]);
+  }, [stopScanner, getTodayKSTString]);
 
   // Auto-start scanner for teachers
   useEffect(() => {
@@ -364,6 +370,11 @@ function ScanPage() {
           {!scanResult && !scanError && isScanning && !isProcessing && (
             <div className="p-3 rounded bg-blue-100 text-blue-800 font-semibold">
               QR 코드를 스캔하세요.
+            </div>
+          )}
+          {isProcessing && (
+            <div className="p-3 rounded bg-blue-100 text-blue-800 font-semibold">
+              처리 중입니다...
             </div>
           )}
         </div>
