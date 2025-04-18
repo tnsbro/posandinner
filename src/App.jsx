@@ -105,7 +105,7 @@ function App() {
             }
           />
           <Route path="/" element={<HomeRedirect />} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<HomeRedirect />} />
         </Routes>
       </AuthProvider>
     </div>
