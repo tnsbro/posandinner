@@ -66,17 +66,8 @@ function HomeRedirect() {
 }
 
 function App() {
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  useEffect(() => {
-    // 새로고침 시 현재 경로가 '/'가 아니면 '/'로 리디렉션
-    if (location.pathname !== '/') {
-      console.log(`새로고침 감지: 현재 경로(${location.pathname}) → 루트(/)로 리디렉션`);
-      navigate('/', { replace: true });
-    }
-  }, [location.pathname, navigate]);
-
+  
   return (
     <div className="App">
       <AuthProvider>
