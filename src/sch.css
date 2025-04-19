@@ -14,7 +14,6 @@ html, body {
   font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Roboto, Arial, sans-serif;
   line-height: 1.6;
   color: #212121; /* 기본 글자색 */
-  overflow: hidden; /* 전체 스크롤바 방지 */
 
   background-color: #F0F2F5; /* 아주 연한 블루-그레이 배경 */
   background-image: none;
