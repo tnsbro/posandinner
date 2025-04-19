@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import LoginPage from './pages/LoginPage';
@@ -66,8 +66,28 @@ function HomeRedirect() {
 }
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isRedirectedRef = useRef(false); // 리디렉션 플래그
 
-  
+  useEffect(() => {
+    // 세션 스토리지로 새로고침 감지
+    const isFreshLoad = !sessionStorage.getItem('hasLoaded');
+    if (isFreshLoad && location.pathname !== '/') {
+      console.log(`새로고침 감지: 현재 경로(${location.pathname}) → 루트(/)로 리디렉션`);
+      sessionStorage.setItem('hasLoaded', 'true'); // 최초 로드 마킹
+      isRedirectedRef.current = true;
+      navigate('/', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  // 페이지 이동 시 세션 스토리지 초기화 방지
+  useEffect(() => {
+    if (!isRedirectedRef.current) {
+      sessionStorage.setItem('hasLoaded', 'true');
+    }
+  }, []);
+
   return (
     <div className="App">
       <AuthProvider>
@@ -107,7 +127,7 @@ function App() {
             }
           />
           <Route path="/" element={<HomeRedirect />} />
-          <Route path="*" element={<HomeRedirect />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </div>
