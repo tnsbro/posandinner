@@ -9,9 +9,11 @@ import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import Pixar from './pages/ScanerPicture';
 import './sch.css';
+import PhraseCreater from './pages/phraseCreater';
 
-function ProtectedRoute({ children, requiredRole }) {
+function ProtectedRoute({ children }) {
   const { loggedInUserData, loading } = useAuth();
 
   if (loading) {
@@ -24,13 +26,6 @@ function ProtectedRoute({ children, requiredRole }) {
 
   if (!loggedInUserData) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (requiredRole && (!loggedInUserData.role || loggedInUserData.role !== requiredRole)) {
-    console.warn(
-      `접근 시도 거부: 사용자 역할(${loggedInUserData?.role}), 필요 역할(${requiredRole}), 리디렉션 to /`
-    );
-    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -60,28 +55,29 @@ function HomeRedirect() {
   if (loggedInUserData?.role === 'admin') {
     return <Navigate to="/admin" replace />;
   }
+  if (loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312') {
+    return <Navigate to="/phrasejae" replace />;
+  }
 
-  console.warn("알 수 없는 사용자 역할 또는 데이터 로드 실패, 로그인 페이지로 이동:", loggedInUserData);
+  console.warn("알 수 없는 사용자 역할, 로그인 페이지로 이동:", loggedInUserData);
   return <Navigate to="/login" replace />;
 }
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isRedirectedRef = useRef(false); // 리디렉션 플래그
+  const isRedirectedRef = useRef(false);
 
   useEffect(() => {
-    // 세션 스토리지로 새로고침 감지
     const isFreshLoad = !sessionStorage.getItem('hasLoaded');
     if (isFreshLoad && location.pathname !== '/') {
       console.log(`새로고침 감지: 현재 경로(${location.pathname}) → 루트(/)로 리디렉션`);
-      sessionStorage.setItem('hasLoaded', 'true'); // 최초 로드 마킹
+      sessionStorage.setItem('hasLoaded', 'true');
       isRedirectedRef.current = true;
       navigate('/', { replace: true });
     }
   }, [location.pathname, navigate]);
 
-  // 페이지 이동 시 세션 스토리지 초기화 방지
   useEffect(() => {
     if (!isRedirectedRef.current) {
       sessionStorage.setItem('hasLoaded', 'true');
@@ -93,11 +89,17 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/pixar" element={<Pixar />} />
+          <Route path="/phrasejae" element={
+              <ProtectedRoute>
+                <PhraseCreater />
+              </ProtectedRoute>
+            } 
+          />
           <Route
             path="/student"
             element={
-              <ProtectedRoute requiredRole="student">
+              <ProtectedRoute>
                 <StudentDashboard />
               </ProtectedRoute>
             }
@@ -105,7 +107,7 @@ function App() {
           <Route
             path="/scan"
             element={
-              <ProtectedRoute requiredRole="teacher">
+              <ProtectedRoute>
                 <ScanPage />
               </ProtectedRoute>
             }
@@ -113,7 +115,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin">
+              <ProtectedRoute>
                 <AdminPage />
               </ProtectedRoute>
             }
@@ -127,7 +129,7 @@ function App() {
             }
           />
           <Route path="/" element={<HomeRedirect />} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </div>

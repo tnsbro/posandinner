@@ -223,16 +223,39 @@ function StudentDashboard() {
                 >
                     로그아웃
                 </button>
-                <br/>
-                <br/>
+                <span> </span>
                 <button
                     onClick={() => navigate('/change-password')}
                     className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
                 >
                     비밀번호 변경
                 </button>
+                <span> </span>
+                <button
+                    onClick={() => navigate('/pixar')}
+                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                >
+                    사진 찍기
+                </button>
+                {loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312' ? (
+                    <>
+                        <span> </span>
+                        <button
+                            onClick={() => navigate('/phrasejae')}
+                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                        >
+                            Top Secret
+                        </button>
+                    </>
+                ) : null}
+
             </div>
-            <p className="text-center text-sm text-gray-500 mb-4">오늘: {todayDate}</p>
+            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 한 마디</h2>
+                <p>{loggedInUserData.phrase || 'N/A'}</p>
+            </div>
+            <br />
+            <br />
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">내 정보</h2>
                 <p>이름: {loggedInUserData.name || 'N/A'}</p>
@@ -240,7 +263,8 @@ function StudentDashboard() {
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
                 {/* 비밀번호 변경 버튼 추가 */}
             </div>
-
+            <br />
+            <br />
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">식권 QR 코드</h2>
                 {loggedInUserData.dinnerApplied && loggedInUserData.dinnerApproved && loggedInUserData.dinnerUsed === false ? (
@@ -249,8 +273,8 @@ function StudentDashboard() {
                             onClick={handleGenerateClick}
                             disabled={!isQrLibLoaded || generatedQrDataString}
                             className={`w-full py-2 rounded ${!isQrLibLoaded || generatedQrDataString
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-blue-500 hover:bg-blue-600 text-white'
                                 }`}
                         >
                             {generatedQrDataString ? 'QR 코드 생성됨 (스캔 대기)' : 'QR 코드 생성'}

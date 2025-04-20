@@ -1,914 +1,661 @@
-/* sch.css - Final Sensory & Apple-inspired Design */
+/* sch.css - 포산pass: Clean Yellow-Themed Design for LoginPage, ScanPage, StudentDashboard, AdminPage */
 
 /* --- Global Reset --- */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* --- Global Body & HTML Styling --- */
-html, body {
-  height: 100%;
-  width: 100%;
-  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Roboto, Arial, sans-serif;
-  line-height: 1.6;
-  color: #212121; /* 기본 글자색 */
-
-  background-color: #F0F2F5; /* 아주 연한 블루-그레이 배경 */
-  background-image: none;
-  background-attachment: fixed;
-}
-
-/* --- Root Element Styling (#root) --- */
-#root {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* --- Global Body & HTML Styling --- */
+  html, body {
+    height: 100%;
+    width: 100%;
+    font-family: 'Inter', 'Noto Sans KR', 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: #1A202C;
+    background-color: #FFF8E1;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* --- Root Element Styling (#root) --- */
+  #root {
     width: 100%;
     height: 100%;
-    /* 다른 CSS 파일과의 충돌 주의 */
-}
-
-/* --- General Page Container (Tailwind container mx-auto Override Attempt) --- */
-/* AdminPage, StudentDashboard, LoginPage 등의 최상위 컨테이너에 사용된 Tailwind 클래스를 */
-/* sch.css의 기본 컨테이너 스타일로 오버라이드 시도 (전체 화면 레이아웃 아님) */
-.container.mx-auto {
-    padding: 24px !important; /* 여백 증가 */
-    max-width: 1280px !important; /* 최대 너비 */
+  }
+  
+  /* --- General Page Container --- */
+  .container.mx-auto {
+    padding: 32px !important;
+    max-width: 1280px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    /* 배경색은 body에서 상속받음 */
-}
-
-
-/* --- Main Page Container (Specific Full-Screen Layout) --- */
-/* ScanPage 등 특정 전체 화면 레이아웃이 필요한 페이지의 주 컨테이너입니다. */
-/* AdminPage, StudentDashboard, LoginPage는 이 클래스를 사용하지 않습니다. */
-.scan-page-container {
-  display: flex;
-  flex-direction: column;
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  background-color: #F0F2F5; /* 배경색 일관성 */
-  background-image: none;
-  overflow: hidden;
-  box-shadow: inset 0 0 15px rgba(0,0,0,0.05); /* 은은한 내부 그림자 */
-}
-
-/* --- Top Absolute Elements (Date & Logout - Used in scan-page-container) --- */
-.date-display {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 0.9rem;
-  color: #616161; /* 중간 회색 */
-  background-color: rgba(255, 255, 255, 0.95); /* 거의 불투명한 흰색 */
-  padding: 8px 16px; /* 여백 증가 */
-  border-radius: 12px; /* 더 부드러운 모서리 */
-  z-index: 10;
-  font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 은은한 그림자 */
-  border: 1px solid rgba(0, 0, 0, 0.08); /* 얇은 테두리 */
-}
-
-/* --- Logout Button Styling (Refined Colors & Style) --- */
-/* 이 스타일은 .scan-page-container 내부의 .logout-button 클래스에 적용됩니다. */
-/* AdminPage, StudentDashboard, LoginPage의 로그아웃 버튼은 Tailwind 클래스 오버라이드를 사용합니다. */
-.logout-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background-color: #FF5252; /* 빨강 */
-  color: #fff;
-  font-weight: 500;
-  padding: 0.8rem 1.6rem; /* 여백 증가 */
-  border-radius: 28px; /* 더 둥글게 */
-  cursor: pointer;
-  z-index: 10;
-  border: none;
-  transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 은은한 그림자 */
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-}
-
-.logout-button:hover:not(:disabled) {
-  background-color: #ff6b6b; /* 호버 시 약간 밝게 */
-  transform: translateY(-4px); /* 더 확실하게 이동 */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* 그림자 커짐 */
-}
-
-.logout-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: #ff3b30; /* 클릭 시 어둡게 */
-}
-.logout-button:disabled {
-  background-color: #e0e0e0; /* 비활성화 회색 */
-  color: #b0b0b0; /* 비활성화 글자색 */
-  cursor: not-allowed;
-  opacity: 0.8;
-  box-shadow: none;
-}
-
-
-/* --- Scanner Area (Top Flexible Section) --- */
-.scanner-area {
-  width: 100%;
-  flex-grow: 1;
-  flex-basis: 60%;
-  min-height: 250px;
-  position: relative;
-  overflow: hidden;
-  background-color: #1a1a1a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #ccc;
-  font-size: 1.1rem;
-  font-weight: 300;
-}
-
-.scanner-area video {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
-}
-
-#qr-reader-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-#qr-reader-container > div:first-of-type {
-   border: none !important;
-   box-shadow: none !important;
-}
-#qr-reader-container > div > span > button {
-  background-color: rgba(255, 255, 255, 0.3) !important; /* 반투명 흰색 */
-  color: white !important;
-  border-radius: 24px !important; /* 더 둥글게 */
-  padding: 10px 18px !important; /* 여백 증가 */
-  margin: 20px !important; /* 마진 증가 */
-  font-size: 1rem !important; /* 글자 크기 증가 */
-  backdrop-filter: blur(8px); /* 블러 강도 증가 */
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  transition: background-color 0.3s ease;
-}
-#qr-reader-container > div > span > button:hover {
-    background-color: rgba(255, 255, 255, 0.4) !important;
-}
-
-
-/* --- Message Area (Bottom Flexible Section) --- */
-.message-area {
-  width: 100%;
-  flex-grow: 1;
-  flex-basis: 40%;
-  min-height: 120px;
-  background-color: rgba(255, 255, 255, 0.98); /* 거의 불투명한 흰색 */
-  padding: 2.5rem 2rem; /* 여백 증가 */
-  text-align: center;
-  z-index: 5;
-  backdrop-filter: blur(15px); /* 블러 강도 증가 */
-  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.08); /* 그림자 강화 */
-  border-top: 1px solid rgba(0,0,0,0.08); /* 테두리 강화 */
-
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  overflow-y: auto;
-  position: relative;
-
-  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
-}
-
-/* Processing Overlay */
-.processing-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.98); /* 거의 불투명한 흰색 */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: 600;
-  color: #444;
-  z-index: 6;
-  font-size: 1.3rem; /* 글자 크기 증가 */
-  padding: 2rem; /* 여백 증가 */
-  gap: 20px; /* 간격 증가 */
-}
-.processing-overlay::after {
-  content: '';
-  width: 40px; /* 스피너 크기 증가 */
-  height: 40px;
-  border: 4px solid #e0e0e0;
-  border-top: 4px solid #5A8DEE; /* 파랑색 */
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-
-/* --- Message Content Styling (Individual Message Boxes) --- */
-.message-content {
-  width: 100%;
-  max-width: 600px;
-  margin: 0.8rem auto; /* 여백 증가 */
-  word-break: break-word;
-  overflow-wrap: break-word;
-
-  padding: 1.2rem 1.8rem; /* 여백 증가 */
-  border-radius: 12px; /* 더 부드러운 모서리 */
-  font-weight: 500;
-  border: 1px solid transparent;
-  font-size: 1rem;
-  line-height: 1.6; /* 줄 간격 */
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* 은은한 그림자 */
-  transition: transform 0.2s ease;
-}
-
-.message-content:hover {
-  transform: translateY(-2px); /* 살짝 이동 */
-}
-
-/* 메시지 유형별 배경색, 글자색, 테두리색 (감각적인 색감 적용) */
-.message-content.success {
-  background-color: #E5F6EE; /* 연한 초록 배경 */
-  color: #00CC96; /* 선명한 초록 글자 */
-  border-color: #B3E0CE; /* 연한 초록 테두리 */
-}
-
-.message-content.error {
-  background-color: #FDEAEA; /* 연한 빨간 배경 */
-  color: #FF5252; /* 선명한 빨강 글자 */
-  border-color: #FCCACF; /* 연한 빨강 테두리 */
-}
-
-.message-content.info {
-  background-color: #EBF4FF; /* 연한 파랑 배경 */
-  color: #5A8DEE; /* 선명한 파랑 글자 */
-  border-color: #BFDBFE; /* 연한 파랑 테두리 */
-}
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
-  .date-display {
-      top: 15px;
-      left: 15px;
-      font-size: 0.85rem;
-      padding: 6px 12px;
   }
-  .logout-button {
-      top: 15px;
-      right: 15px;
-      padding: 0.7rem 1.4rem;
-      font-size: 0.9rem;
+  
+  /* ScanPage Container */
+  .container.mx-auto.p-4.max-w-lg {
+    max-width: 512px !important;
+    padding: 24px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
-  .message-area {
-      padding: 2rem 1rem;
-      flex-basis: 35%;
-      min-height: 100px;
+  
+  /* --- LoginPage Container --- */
+  .container-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    padding: 24px;
+    background-color: #FFF8E1;
+    overflow: auto;
   }
-   .scanner-area {
-       flex-basis: 65%;
-  }
-  .message-content {
-      padding: 1rem 1.5rem;
-      font-size: 0.95rem;
-      margin: 0.6rem auto;
-  }
-  .processing-overlay {
-      font-size: 1.2rem;
-      padding: 1.5rem;
-  }
-  .processing-overlay::after {
-      width: 30px;
-      height: 30px;
-      border-width: 3px;
-  }
-}
-
-@media (max-width: 576px) {
-  .date-display {
-      font-size: 0.8rem;
-      padding: 5px 10px;
-      top: 10px;
-      left: 10px;
-      border-radius: 8px;
-  }
-  .logout-button {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.85rem;
-      top: 10px;
-      right: 10px;
-      border-radius: 20px;
-  }
-  .message-area {
-      padding: 1.5rem 0.8rem;
-      flex-basis: 40%;
-      min-height: 80px;
-  }
-  .scanner-area {
-      flex-basis: 60%;
-  }
-  .message-content {
-      font-size: 0.9rem;
-      padding: 0.8rem 1.2rem;
-      margin: 0.5rem auto;
-  }
-  .processing-overlay {
-      font-size: 1.1rem;
-      padding: 1rem;
-  }
-   .processing-overlay::after {
-        width: 25px;
-        height: 25px;
-        border-width: 3px;
-   }
-}
-
-/* --- Fallback/Loading States --- */
-/* App.jsx에서 .loading-container 또는 .unauthorized-container 클래스를 사용할 때 적용됩니다. */
-.loading-container, .unauthorized-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-  font-size: 1.3rem; /* 글자 크기 증가 */
-  color: #444;
-  text-align: center;
-  padding: 3rem; /* 여백 증가 */
-  background-color: #F0F2F5; /* 배경색 일관성 유지 */
-  background-image: none;
-  gap: 25px; /* 간격 증가 */
-}
-
-.loading-container p, .unauthorized-container p {
-    max-width: 500px; /* 최대 너비 증가 */
-    line-height: 1.7; /* 줄 간격 증가 */
-}
-
-.loading-container::after {
-    content: '';
-    width: 50px; /* 스피너 크기 증가 */
-    height: 50px;
-    border: 6px solid #e0e0e0; /* 스피너 테두리 */
-    border-top: 6px solid #5A8DEE; /* 파랑색 */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-/* --- Unauthorized Container Button Styling (Refined Colors) --- */
-/* .unauthorized-container 내부에서 button 요소에 적용됩니다. */
-.unauthorized-container button {
-    background-color: #FF5252; /* 빨강 */
-    color: white;
-    padding: 1rem 2rem; /* 여백 증가 */
-    border-radius: 28px;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem; /* 글자 크기 증가 */
-    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.unauthorized-container button:hover {
-     background-color: #ff6b6b;
-     transform: translateY(-3px);
-     box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-.unauthorized-container button:active {
-     transform: translateY(0);
-     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-     background-color: #ff3b30;
-}
-
-/* --- Login & Form Button Styling --- */
-/* LoginPage.jsx에서 사용된 특정 Tailwind 클래스 및 ID에 직접 오버라이드 시도합니다. */
-/* 이는 충돌 및 유지보수 문제를 유발할 수 있으므로 권장되지 않습니다. */
-
-/* 로그인 제출 버튼 (Tailwind bg-indigo-600 클래스) */
-form button[type="submit"].bg-indigo-600 {
-    display: block;
-    width: 100% !important;
-    background-color: #5A8DEE !important; /* 파랑색 */
-    color: #fff !important;
-    font-weight: 500 !important;
-    padding: 1rem 1.5rem !important; /* 여백 증가 */
-    border-radius: 8px !important;
-    border: none !important;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 그림자 강화 */
-    font-size: 1rem !important;
-    text-align: center !important;
-    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
-}
-
-form button[type="submit"].bg-indigo-600:hover:not(:disabled) {
-    background-color: #4b7bdc !important; /* 호버 시 어둡게 */
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-form button[type="submit"].bg-indigo-600:active:not(:disabled) {
-    background-color: #3f6cb8 !important; /* 클릭 시 더 어둡게 */
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-form button[type="submit"].bg-indigo-600:disabled {
-    background-color: #e0e0e0 !important; /* 비활성화 회색 */
-    color: #b0b0b0 !important;
-    cursor: not-allowed;
-    opacity: 1 !important;
-    box-shadow: none;
-}
-
-/* 회원가입 버튼 (#signUpButton ID) */
-#signUpButton {
-    display: block;
-    width: auto;
-    margin: 1.5rem auto 1rem auto; /* 여백 증가 */
-    background: none;
-    color: #5A8DEE; /* 파랑색 */
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem; /* 글자 크기 증가 */
-    transition: color 0.2s ease, text-decoration 0.2s ease;
-    text-decoration: none;
-}
-
-#signUpButton:hover:not(:disabled) {
-    color: #4b7bdc;
-    text-decoration: underline;
-}
-
-#signUpButton:active:not(:disabled) {
-    color: #3f6cb8;
-}
-
-#signUpButton:disabled {
-    color: #b0b0b0;
-    cursor: not-allowed;
-    opacity: 0.7;
-    text-decoration: none;
-}
-
-/* --- End of LoginPage Specific Styles --- */
-
-
-/* --- Styles Targeting Specific Student Dashboard Elements --- */
-/* StudentDashboard.jsx에서 사용된 특정 Tailwind 클래스에 직접 오버라이드 시도합니다. */
-
-/* 학생 대시보드 로그아웃 버튼 (Tailwind bg-red-500 클래스) */
-button.bg-red-500.text-white {
-    background-color: #FF5252 !important; /* 빨강 */
-    color: #fff !important;
-    font-weight: 500 !important;
-    padding: 0.8rem 1.6rem !important; /* 여백 증가 */
-    border-radius: 28px !important; /* 더 둥글게 */
-    border: none !important;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-size: 1rem !important;
-    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
-}
-
-button.bg-red-500.text-white:hover:not(:disabled) {
-    background-color: #ff6b6b !important;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-button.bg-red-500.text-white:active:not(:disabled) {
-    background-color: #ff3b30 !important;
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* 학생 대시보드 QR 생성 버튼 (Tailwind bg-blue-500, bg-gray-400 클래스) */
-button.bg-blue-500.text-white {
-    display: block !important;
-    width: 100% !important;
-    background-color: #5A8DEE !important; /* 파랑색 */
-    color: #fff !important;
-    font-weight: 500 !important;
-    padding: 1rem 1.5rem !important; /* 여백 증가 */
-    border-radius: 8px !important;
-    border: none !important;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-size: 1rem !important;
-    text-align: center !important;
-    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
-}
-
-button.bg-blue-500.text-white:hover:not(:disabled) {
-    background-color: #4b7bdc !important;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-button.bg-blue-500.text-white:active:not(:disabled) {
-    background-color: #3f6cb8 !important;
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-button.bg-gray-400.cursor-not-allowed {
-    background-color: #e0e0e0 !important; /* 비활성화 회색 */
-    color: #b0b0b0 !important;
-    cursor: not-allowed !important;
-    opacity: 1 !important;
-    box-shadow: none;
-    transform: none !important;
-}
-
-
-/* 학생 대시보드 메시지/상태 표시 (Tailwind bg-*, text-* 클래스) */
-/* 이들은 ScanPage에서도 동일하게 오버라이드 됩니다. */
-
-/* 에러 상태 메시지 (text-red-600 text-center 클래스) */
-p.text-red-600.text-center, div.text-red-600.text-center {
-    background-color: #FDEAEA !important; /* 연한 빨간 배경 */
-    color: #FF5252 !important; /* 선명한 빨강 글자 */
-    padding: 1.2rem 1.8rem !important; /* 여백 증가 */
-    border-radius: 10px !important;
-    border: 1px solid #FCCACF !important;
-    margin: 0.8rem auto !important; /* 여백 증가 */
-    font-weight: 500 !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    text-align: center !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-    line-height: 1.6 !important;
-}
-
-/* 성공 상태 메시지 (bg-green-100 text-green-800 클래스) */
-div.p-3.rounded.bg-green-100.text-green-800 {
-    background-color: #E5F6EE !important; /* 연한 초록 배경 */
-    color: #00CC96 !important; /* 선명한 초록 글자 */
-    padding: 1.2rem 1.8rem !important;
-    border-radius: 10px !important;
-    border: 1px solid #B3E0CE !important;
-    margin: 0.8rem auto !important;
-    font-weight: 500 !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    text-align: center !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-    line-height: 1.6 !important;
-}
-
-/* 오류 상태 메시지 (bg-red-100 text-red-800 클래스) - Error와 동일하게 처리 */
-div.p-3.rounded.bg-red-100.text-red-800 {
-    background-color: #FDEAEA !important; /* 연한 빨간 배경 */
-    color: #FF5252 !important; /* 선명한 빨강 글자 */
-    padding: 1.2rem 1.8rem !important;
-    border-radius: 10px !important;
-    border: 1px solid #FCCACF !important;
-    margin: 0.8rem auto !important;
-    font-weight: 500 !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    text-align: center !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-    line-height: 1.6 !important;
-}
-
-/* 정보 상태 메시지 (bg-blue-100 text-blue-800 클래스) */
-div.p-3.rounded.bg-blue-100.text-blue-800 {
-    background-color: #EBF4FF !important; /* 연한 파랑 배경 */
-    color: #5A8DEE !important; /* 선명한 파랑 글자 */
-    padding: 1.2rem 1.8rem !important;
-    border-radius: 10px !important;
-    border: 1px solid #BFDBFE !important;
-    margin: 0.8rem auto !important;
-    font-weight: 500 !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    text-align: center !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-    line-height: 1.6 !important;
-}
-
-
-/* --- Styles Targeting Specific AdminPage Elements --- */
-/* AdminPage.jsx에서 사용된 특정 Tailwind 클래스에 직접 오버라이드 시도합니다. */
-
-/* AdminPage 헤더 h1 (text-3xl font-bold text-gray-800) */
-.container.mx-auto h1.text-3xl.font-bold.text-gray-800 {
-    color: #212121 !important; /* 기본 글자색과 일관성 */
-    font-size: 2.2rem !important; /* 크기 조정 */
+  
+  /* --- 포산pass Title Styling --- */
+  h1.text-2xl.font-bold.text-gray-800,
+  h1.text-3xl.font-bold.text-gray-800,
+  h1.text-center.text-bold.mb-4 {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 2.25rem !important;
     font-weight: 700 !important;
-}
-
-/* AdminPage 오류 메시지 p (mb-4 text-red-600 bg-red-100 p-2 rounded) */
-p.mb-4.text-red-600.bg-red-100.p-2.rounded {
-    background-color: #FDEAEA !important; /* 연한 빨간 배경 */
-    color: #FF5252 !important; /* 선명한 빨강 글자 */
-    padding: 1rem 1.5rem !important;
-    border-radius: 10px !important;
-    border: 1px solid #FCCACF !important;
+    text-align: center;
+    color: #FFC107 !important;
+    text-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    margin-bottom: 1.5rem !important;
+    animation: glow 3s ease-in-out infinite;
+  }
+  
+  @keyframes glow {
+    0%, 100% { text-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); }
+    50% { text-shadow: 0 4px 16px rgba(255, 193, 7, 0.5); }
+  }
+  
+  /* --- Cards (General & LoginPage) --- */
+  .bg-white.p-6.rounded-lg.shadow-md,
+  .bg-white.p-6.rounded-lg.shadow-md.mb-6,
+  .card {
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    padding: 24px !important;
+    margin-bottom: 1.5rem !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .bg-white.p-6.rounded-lg.shadow-md:hover,
+  .bg-white.p-6.rounded-lg.shadow-md.mb-6:hover,
+  .card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 400px;
+    margin: 16px auto;
+  }
+  
+  /* --- Headings Inside Cards --- */
+  .bg-white.p-6.rounded-lg.shadow-md h2.text-xl.font-semibold.mb-3.text-gray-700,
+  .card h2.text-center.text-bold.mb-4 {
+    font-family: 'Poppins', sans-serif !important;
+    color: #1A202C !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
     margin-bottom: 1rem !important;
     text-align: center !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+  }
+  
+  /* --- Paragraphs and Text --- */
+  .bg-white.p-6.rounded-lg.shadow-md p,
+  .bg-white.p-6.rounded-lg.shadow-md.mb-6 p,
+  .card p.text-center.text-gray {
+    color: #4A5568 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 0.5rem !important;
+    text-align: center !important;
+  }
+  
+  .bg-white.p-6.rounded-lg.shadow-md p:last-child,
+  .bg-white.p-6.rounded-lg.shadow-md.mb-6 p:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  .text-center.text-gray-500,
+  .text-center.text-sm.text-gray-500.mb-4,
+  .text-center.text-gray-500.mt-4,
+  .text-center.text-red-600 {
+    color: #4A5568 !important;
+    font-size: 0.9rem !important;
+    text-align: center !important;
+  }
+  
+  .text-center.text-red-600 {
+    color: #F44336 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* --- Message Content (Success, Error, Info) --- */
+  .p-3.rounded.bg-green-100.text-green-800,
+  .p-3.rounded.bg-red-100.text-red-800,
+  .p-3.rounded.bg-blue-100.text-blue-800,
+  .mb-4.text-red-600.bg-red-100.p-2.rounded {
+    padding: 1rem 1.5rem !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    text-align: center !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    transition: transform 0.3s ease;
     word-break: break-word;
     overflow-wrap: break-word;
-}
-
-
-/* AdminPage 필터/검색 영역 컨테이너 (mb-4 flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border) */
-.mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4.p-4.bg-gray-50.rounded-lg.border {
-    background-color: #fff !important; /* 흰색 배경 */
-    padding: 1.5rem !important;
-    border-radius: 12px !important; /* 모서리 둥글게 */
-    border: 1px solid #e0e0e0 !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 은은한 그림자 */
-    margin-bottom: 1.5rem !important;
-    /* Flexbox 속성은 Tailwind 클래스 그대로 사용 */
-}
-
-/* AdminPage 검색 입력 필드 */
-.mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4 input[type="text"] {
-    width: 100% !important;
-    padding: 0.8rem 1rem !important; /* 여백 증가 */
-    border: 1px solid #ccc !important;
-    border-radius: 8px !important; /* 모서리 둥글게 */
-    box-shadow: inset 0 1px 4px rgba(0,0,0,0.05); /* 은은한 그림자 */
-    /* focus: outline/ring 스타일은 Tailwind 유지 */
-}
-
-/* AdminPage 필터 체크박스 스타일은 기본 Tailwind 또는 라이브러리 사용 권장 */
-
-
-/* AdminPage 일괄 처리 버튼 */
-
-/* '신청자 전체 승인' 버튼 (bg-green-500) */
-.mb-4.flex button.bg-green-500.text-white {
-    background-color: #00CC96 !important; /* 초록색 */
-    color: #fff !important;
-    font-weight: 500 !important;
-    padding: 0.7rem 1.2rem !important; /* 여백 조정 */
-    border-radius: 8px !important;
-    border: none !important;
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 그림자 */
-    font-size: 0.9rem !important;
-}
-.mb-4.flex button.bg-green-500.text-white:hover:not(:disabled) {
-     background-color: #00b88a !important; /* 호버 시 어둡게 */
-     box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-}
-.mb-4.flex button.bg-green-500.text-white:active:not(:disabled) {
-    background-color: #00a37d !important; /* 클릭 시 더 어둡게 */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.mb-4.flex button.bg-green-500.text-white:disabled {
-     background-color: #a8e6d3 !important; /* 비활성화 시 연하게 */
-     color: #fff !important;
-     cursor: not-allowed;
-     opacity: 0.8 !important;
-     box-shadow: none;
-}
-
-
-/* '전체 승인 취소' 버튼 (bg-yellow-500) */
-.mb-4.flex button.bg-yellow-500.text-white {
-    background-color: #FFAB00 !important; /* 노랑색 */
-    color: #212121 !important; /* 어두운 글자색 */
-    font-weight: 500 !important;
-    padding: 0.7rem 1.2rem !important;
-    border-radius: 8px !important;
-    border: none !important;
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    font-size: 0.9rem !important;
-}
-.mb-4.flex button.bg-yellow-500.text-white:hover:not(:disabled) {
-     background-color: #e69a00 !important; /* 호버 시 어둡게 */
-     box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-}
-.mb-4.flex button.bg-yellow-500.text-white:active:not(:disabled) {
-    background-color: #cc8800 !important; /* 클릭 시 더 어둡게 */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.mb-4.flex button.bg-yellow-500.text-white:disabled {
-     background-color: #ffdb80 !important; /* 비활성화 시 연하게 */
-     color: #212121 !important;
-     cursor: not-allowed;
-     opacity: 0.8 !important;
-     box-shadow: none;
-}
-
-
-/* AdminPage 테이블 컨테이너 (overflow-x-auto bg-white rounded-lg shadow) */
-.overflow-x-auto.bg-white.rounded-lg.shadow {
-    background-color: #fff !important; /* 흰색 배경 */
-    border-radius: 12px !important; /* 모서리 둥글게 */
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; /* 그림자 강화 */
-    /* overflow-x-auto는 그대로 유지 */
-}
-
-/* AdminPage 테이블 요소 (table, thead, tbody, tr, th, td) */
-.overflow-x-auto.bg-white.rounded-lg.shadow table.min-w-full {
-    border-collapse: collapse;
+  }
+  
+  .p-3.rounded.bg-green-100.text-green-800 {
+    background-color: #E8F5E9 !important;
+    color: #4CAF50 !important;
+    border: 1px solid #C8E6C9 !important;
+  }
+  
+  .p-3.rounded.bg-red-100.text-red-800,
+  .mb-4.text-red-600.bg-red-100.p-2.rounded {
+    background-color: #FFEBEE !important;
+    color: #F44336 !important;
+    border: 1px solid #FFCDD2 !important;
+    animation: shake 0.5s ease;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  .p-3.rounded.bg-blue-100.text-blue-800 {
+    background-color: #E3F2FD !important;
+    color: #2196F3 !important;
+    border: 1px solid #BBDEFB !important;
+  }
+  
+  .p-3.rounded.bg-green-100.text-green-800:hover,
+  .p-3.rounded.bg-red-100.text-red-800:hover,
+  .p-3.rounded.bg-blue-100.text-blue-800:hover,
+  .mb-4.text-red-600.bg-red-100.p-2.rounded:hover {
+    transform: scale(1.03);
+  }
+  
+  /* --- Inputs (LoginPage) --- */
+  .input {
+    display: block;
     width: 100%;
-}
-
-.overflow-x-auto.bg-white.rounded-lg.shadow table th {
-     background-color: #f8f9fa !important; /* 헤더 배경색 */
-     color: #616161 !important; /* 헤더 글자색 */
-     font-weight: 600 !important;
-     text-align: left !important;
-     padding: 14px 18px !important; /* 여백 증가 */
-     font-size: 0.8rem !important; /* 텍스트 크기 조정 */
-     text-transform: uppercase !important;
-     border-bottom: 1px solid #e0e0e0 !important;
-     /* 첫 번째/마지막 컬럼 모서리 둥글기는 상위 컨테이너에서 처리 */
-}
-/* 특정 헤더 텍스트 정렬 오버라이드 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table th.px-4.py-3.text-center {
-     text-align: center !important;
-}
-/* 첫 번째 헤더 (이름) 좌측 상단 모서리 둥글게 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table thead tr th:first-child {
-    border-top-left-radius: 10px !important; /* 상위 컨테이너 border-radius -2px */
-}
-/* 마지막 헤더 (승인 변경) 우측 상단 모서리 둥글게 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table thead tr th:last-child {
-    border-top-right-radius: 10px !important; /* 상위 컨테이너 border-radius -2px */
-}
-
-
-.overflow-x-auto.bg-white.rounded-lg.shadow table td {
-    padding: 14px 18px !important; /* 여백 증가 */
-    font-size: 0.9rem !important;
-    color: #333 !important;
-    border-bottom: 1px solid #eee !important;
-}
-/* 특정 셀 텍스트 정렬 오버라이드 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table td.px-4.py-3.text-center {
-     text-align: center !important;
-}
-/* 이름 컬럼 오버라이드 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table td.px-4.py-3.whitespace-nowrap.text-sm.font-medium.text-gray-900 {
-     font-weight: 500 !important;
-     color: #212121 !important; /* 더 진하게 */
-}
-/* 마지막 행 좌/우 하단 모서리 둥글게 (tbody에 직접 스타일 적용하는 것이 더 쉬울 수 있으나 여기서는 td에 적용 시도) */
-.overflow-x-auto.bg-white.rounded-lg.shadow table tbody tr:last-child td:first-child {
-    border-bottom-left-radius: 10px !important;
-}
-.overflow-x-auto.bg-white.rounded-lg.shadow table tbody tr:last-child td:last-child {
-    border-bottom-right-radius: 10px !important;
-}
-
-
-/* 테이블 행 호버 효과 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table tbody tr:hover {
-    background-color: #fafafa !important; /* 호버 시 배경색 */
-}
-
-
-/* AdminPage 테이블 셀 내부의 상태 표시 span */
-span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full {
-    font-size: 0.7rem !important; /* text-xs보다 약간 작게 */
-    line-height: 1 !important; /* 높이 조정 */
-    padding: 4px 10px !important; /* 여백 조정 */
-    border-radius: 9999px !important;
-    font-weight: 600 !important;
-    /* 색상 오버라이드는 아래에서 각 클래스별로 */
-}
-
-span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-blue-100.text-blue-800 {
-    background-color: #EBF4FF !important;
-    color: #5A8DEE !important;
-}
-span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-gray-100.text-gray-800 {
-    background-color: #e0e0e0 !important;
-    color: #616161 !important; /* 어두운 회색 글자 */
-}
-span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-green-100.text-green-800 {
-    background-color: #E5F6EE !important;
-    color: #00CC96 !important;
-}
-span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-red-100.text-red-800 {
-    background-color: #FDEAEA !important;
-    color: #FF5252 !important;
-}
-
-
-/* AdminPage 테이블 셀 내부의 개별 승인 변경 버튼 */
-.overflow-x-auto.bg-white.rounded-lg.shadow table td button.px-3.py-1.text-xs.rounded {
-    font-size: 0.75rem !important;
-    padding: 6px 12px !important; /* 여백 조정 */
-    border-radius: 8px !important; /* 모서리 조정 */
+    padding: 0.8rem 1rem;
+    border: 1px solid #CBD5E0;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+    font-size: 0.95rem;
+    color: #1A202C;
+    line-height: 1.5;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .input:focus {
+    border-color: #FFC107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+    outline: none;
+  }
+  
+  .input::placeholder {
+    color: #A0AEC0;
+    opacity: 1;
+  }
+  
+  .input.mb-4 {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* --- Labels (LoginPage) --- */
+  label.text-gray.text-bold {
+    display: block;
+    color: #4A5568 !important;
     font-weight: 500 !important;
-    transition: background-color 0.3s ease, box-shadow 0.15s ease, transform 0.15s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-size: 0.9rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* --- Buttons (General & LoginPage) --- */
+  button.bg-red-500.text-white,
+  button.bg-blue-500.text-white,
+  button.bg-green-500.text-white,
+  button.bg-yellow-500.text-white,
+  button.w-full.py-2.rounded.bg-blue-500.text-white,
+  button.button.button-primary {
+    border-radius: 10px !important;
     border: none !important;
-}
-.overflow-x-auto.bg-white.rounded-lg.shadow table td button.px-3.py-1.text-xs.rounded:hover:not(:disabled) {
-     transform: translateY(-2px);
-     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-
-/* 신청 안 함 (비활성 - bg-gray-300) */
-.overflow-x-auto.bg-white.rounded-lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-gray-300 {
-     background-color: #e0e0e0 !important;
-     color: #a1a1a6 !important; /* 비활성 글자색 */
-     cursor: not-allowed;
-     box-shadow: none;
-     transform: none !important;
-     opacity: 0.8;
-}
-/* 승인 취소 (현재 승인됨 -> bg-yellow-500) */
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-yellow-500 {
-     background-color: #FFAB00 !important; /* 노랑색 */
-     color: #212121 !important; /* 어두운 글자색 */
-}
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-yellow-500:hover:not(:disabled) {
-     background-color: #e69a00 !important;
-}
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-yellow-500:active:not(:disabled) {
-     background-color: #cc8800 !important;
-}
-/* 승인하기 (현재 미승인 -> bg-green-500) */
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-green-500 {
-     background-color: #00CC96 !important; /* 초록색 */
-     color: #fff !important; /* 흰색 글자 */
-}
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-green-500:hover:not(:disabled) {
-     background-color: #00b88a !important;
-}
-.overflow-x-auto.bg-white.rounded_lg.shadow table td button.px-3.py-1.text-xs.rounded.bg-green-500:active:not(:disabled) {
-    background-color: #00a37d !important;
-}
-
-
-/* --- Styles Targeting Specific ScanPage Elements --- */
-/* ScanPage.jsx에서 사용된 특정 Tailwind 클래스/ID에 직접 오버라이드 시도합니다. */
-
-/* QR 리더 영역 (id="qr-reader-teacher" 사용) */
-#qr-reader-teacher {
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    padding: 0.8rem 1.5rem !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  }
+  
+  button.bg-red-500.text-white {
+    background-color: #F44336 !important;
+    color: #FFFFFF !important;
+  }
+  
+  button.bg-red-500.text-white:hover:not(:disabled) {
+    background-color: #E53935 !important;
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
+  }
+  
+  button.bg-red-500.text-white:active:not(:disabled) {
+    background-color: #D32F2F !important;
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  }
+  
+  button.bg-blue-500.text-white,
+  button.w-full.py-2.rounded.bg-blue-500.text-white,
+  button.button.button-primary {
+    background-color: #FFC107 !important;
+    color: #1A202C !important;
+  }
+  
+  button.bg-blue-500.text-white:hover:not(:disabled),
+  button.w-full.py-2.rounded.bg-blue-500.text-white:hover:not(:disabled),
+  button.button.button-primary:hover:not(:disabled) {
+    background-color: rgb(241, 255, 40) !important;
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
+  }
+  
+  button.bg-blue-500.text-white:active:not(:disabled),
+  button.w-full.py-2.rounded.bg-blue-500.text-white:active:not(:disabled),
+  button.button.button-primary:active:not(:disabled) {
+    background-color: rgb(255, 238, 0) !important;
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  }
+  
+  button.bg-green-500.text-white {
+    background-color: #4CAF50 !important;
+    color: #FFFFFF !important;
+  }
+  
+  button.bg-green-500.text-white:hover:not(:disabled) {
+    background-color: #43A047 !important;
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
+  }
+  
+  button.bg-green-500.text-white:active:not(:disabled) {
+    background-color: #388E3C !important;
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  }
+  
+  button.bg-yellow-500.text-white {
+    background-color: #FF5722 !important;
+    color: #FFFFFF !important;
+  }
+  
+  button.bg-yellow-500.text-white:hover:not(:disabled) {
+    background-color: #F4511E !important;
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
+  }
+  
+  button.bg-yellow-500.text-white:active:not(:disabled) {
+    background-color: #E64A19 !important;
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  }
+  
+  /* --- Disabled Buttons --- */
+  button.bg-gray-400.cursor-not-allowed,
+  button.bg-gray-300.text-gray-500.cursor-not-allowed,
+  button.button.button-primary:disabled {
+    background-color: #E2E8F0 !important;
+    color: #A0AEC0 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0.7 !important;
+  }
+  
+  /* --- QR Reader (ScanPage) --- */
+  #qr-reader-teacher {
     width: 100% !important;
     max-width: 500px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    border: 1px solid #e0e0e0 !important; /* 얇은 테두리 */
-    border-radius: 12px !important; /* 모서리 둥글게 */
+    margin: 0 auto !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
     overflow: hidden !important;
     min-height: 250px !important;
-    position: relative;
-    background-color: #eee !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 은은한 그림자 */
-}
-
-/* html5-qrcode가 #qr-reader-teacher 내부에 삽입하는 비디오 요소 */
-#qr-reader-teacher video {
-    display: block;
+    background-color: #FFF8E1 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  }
+  
+  #qr-reader-teacher video {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover;
-}
-
-/* html5-qrcode가 #qr-reader-teacher 내부에 삽입하는 UI 요소 (예: 토치 버튼) */
-#qr-reader-teacher > div > span > button {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-    color: white !important;
+  }
+  
+  #qr-reader-teacher > div > span > button {
+    background-color: #FFFFFF !important;
+    color: #1A202C !important;
     border-radius: 24px !important;
     padding: 10px 18px !important;
     margin: 20px !important;
+    font-size: 0.95rem !important;
+    border: 1px solid #E2E8F0 !important;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  #qr-reader-teacher > div > span > button:hover {
+    background-color: #FFF8E1 !important;
+    transform: scale(1.03);
+  }
+  
+  /* --- QR Code Display (StudentDashboard) --- */
+  .h-52.flex.items-center.justify-center.border.rounded.bg-gray-50.mt-4 {
+    height: 13rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    background-color: #FFFFFF !important;
+    margin-top: 1rem !important;
+    overflow: hidden;
+  }
+  
+  .h-52.flex.items-center.justify-center.border.rounded.bg-gray-50.mt-4 > div,
+  .h-52.flex.items-center.justify-center.border.rounded.bg-gray-50.mt-4 > p {
+    color: #4A5568 !important;
+    font-size: 0.9rem !important;
+    text-align: center !important;
+  }
+  
+  /* --- AdminPage Filter/Search Section --- */
+  .mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4.p-4.bg-gray-50.rounded-lg.border {
+    background-color: #FFFFFF !important;
+    padding: 1.5rem !important;
+    border-radius: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4 input[type="text"] {
+    width: 100% !important;
+    padding: 0.8rem 1rem !important;
+    border: 1px solid #CBD5E0 !important;
+    border-radius: 8px !important;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.05) !important;
+    font-size: 0.95rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4 input[type="text"]:focus {
+    border-color: #FFC107 !important;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1) !important;
+    outline: none !important;
+  }
+  
+  .mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4 label.text-sm.font-medium.text-gray-700 {
+    color: #4A5568 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* --- AdminPage Table --- */
+  .overflow-x-auto.bg-white.rounded-lg.shadow {
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    overflow-x: auto;
+  }
+  
+  table.min-w-full {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  table.min-w-full thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #FFF8E1 !important;
+  }
+  
+  table.min-w-full th {
+    padding: 14px 18px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #4A5568 !important;
+    text-align: left !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+  }
+  
+  table.min-w-full th.px-4.py-3.text-center {
+    text-align: center !important;
+  }
+  
+  table.min-w-full thead tr th:first-child {
+    border-top-left-radius: 12px !important;
+  }
+  
+  table.min-w-full thead tr th:last-child {
+    border-top-right-radius: 12px !important;
+  }
+  
+  table.min-w-full td {
+    padding: 14px 18px !important;
+    font-size: 0.9rem !important;
+    color: #1A202C !important;
+    border-bottom: 1px solid #EDF2F7 !important;
+    font-weight: 500 !important;
+  }
+  
+  table.min-w-full td.px-4.py-3.text-center {
+    text-align: center !important;
+  }
+  
+  table.min-w-full td.px-4.py-3.whitespace-nowrap.text-sm.font-medium.text-gray-900 {
+    font-weight: 500 !important;
+    color: #1A202C !important;
+  }
+  
+  table.min-w-full tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 12px !important;
+  }
+  
+  table.min-w-full tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 12px !important;
+  }
+  
+  table.min-w-full tbody tr:nth-child(even) {
+    background-color: #FFF8E1 !important;
+  }
+  
+  table.min-w-full tbody tr:hover {
+    background-color: #FFE082 !important;
+  }
+  
+  /* --- Status Badges --- */
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full {
+    font-size: 0.75rem !important;
+    padding: 4px 12px !important;
+    border-radius: 9999px !important;
+    font-weight: 600 !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-blue-100.text-blue-800 {
+    background-color: #E3F2FD !important;
+    color: #2196F3 !important;
+  }
+  
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-gray-100.text-gray-800 {
+    background-color: #E2E8F0 !important;
+    color: #4A5568 !important;
+  }
+  
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-green-100.text-green-800 {
+    background-color: #E8F5E9 !important;
+    color: #4CAF50 !important;
+  }
+  
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-green-100.text-green-800.pending {
+    animation: pulse 2s infinite;
+  }
+  
+  span.px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full.bg-red-100.text-red-800 {
+    background-color: #FFEBEE !important;
+    color: #F44336 !important;
+  }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+  }
+  
+  /* --- Admin Table Buttons --- */
+  table.min-w-full td button.px-3.py-1.text-xs.rounded {
+    font-size: 0.75rem !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    border: none !important;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded:hover:not(:disabled) {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded:active:not(:disabled) {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-green-500 {
+    background-color: #4CAF50 !important;
+    color: #FFFFFF !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-green-500:hover:not(:disabled) {
+    background-color: #43A047 !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-green-500:active:not(:disabled) {
+    background-color: #388E3C !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-yellow-500 {
+    background-color: #FF5722 !important;
+    color: #FFFFFF !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-yellow-500:hover:not(:disabled) {
+    background-color: #F4511E !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-yellow-500:active:not(:disabled) {
+    background-color: #E64A19 !important;
+  }
+  
+  table.min-w-full td button.px-3.py-1.text-xs.rounded.bg-gray-300 {
+    background-color: #E2E8F0 !important;
+    color: #A0AEC0 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0.7 !important;
+  }
+  
+  /* --- Loading and Empty States --- */
+  .text-center.text-gray-500 {
+    padding: 2rem !important;
     font-size: 1rem !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    transition: background-color 0.3s ease;
-}
-#qr-reader-teacher > div > span > button:hover {
-    background-color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* 참고: ScanPage.jsx의 로그아웃 버튼과 메시지 박스는 */
-/* Student Dashboard 섹션에 정의된 Tailwind 클래스 오버라이드 스타일을 따릅니다. */
-
-/* --- End of ScanPage Specific Styles --- */
+  }
+  
+  /* --- Responsive Adjustments --- */
+  @media (max-width: 768px) {
+    .container.mx-auto {
+      padding: 24px !important;
+    }
+    .container.mx-auto.p-4.max-w-lg,
+    .container-center {
+      padding: 16px !important;
+    }
+    h1.text-2xl.font-bold.text-gray-800,
+    h1.text-3xl.font-bold.text-gray-800,
+    h1.text-center.text-bold.mb-4 {
+      font-size: 1.75rem !important;
+    }
+    .bg-white.p-6.rounded-lg.shadow-md,
+    .bg-white.p-6.rounded-lg.shadow-md.mb-6,
+    .card {
+      padding: 16px !important;
+    }
+    .mb-4.flex.flex-col.sm\:flex-row.sm\:items-center.gap-4.p-4.bg-gray-50.rounded-lg.border {
+      flex-direction: column !important;
+      padding: 1rem !important;
+    }
+    table.min-w-full th,
+    table.min-w-full td {
+      padding: 10px 12px !important;
+      font-size: 0.85rem !important;
+    }
+    .card {
+      max-width: 350px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .container.mx-auto,
+    .container-center {
+      padding: 16px !important;
+    }
+    h1.text-2xl.font-bold.text-gray-800,
+    h1.text-3xl.font-bold.text-gray-800,
+    h1.text-center.text-bold.mb-4 {
+      font-size: 1.5rem !important;
+    }
+    .p-3.rounded.bg-green-100.text-green-800,
+    .p-3.rounded.bg-red-100.text-red-800,
+    .p-3.rounded.bg-blue-100.text-blue-800,
+    .mb-4.text-red-600.bg-red-100.p-2.rounded {
+      font-size: 0.9rem !important;
+      padding: 0.8rem 1rem !important;
+    }
+    button.bg-red-500.text-white,
+    button.bg-blue-500.text-white,
+    button.bg-green-500.text-white,
+    button.bg-yellow-500.text-white,
+    button.w-full.py-2.rounded.bg-blue-500.text-white,
+    button.button.button-primary {
+      padding: 0.6rem 1rem !important;
+      font-size: 0.9rem !important;
+    }
+    .input {
+      padding: 0.7rem 0.9rem !important;
+      font-size: 0.9rem !important;
+    }
+  }

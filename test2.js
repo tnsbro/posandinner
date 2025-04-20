@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, updateDoc, doc } from "firebase/firestore";
-import bcrypt from "bcrypt";
+import { getFirestore, collection, getDocs, updateDoc, doc, deleteField } from "firebase/firestore";
 
 // Firebase 설정
 const firebaseConfig = {
@@ -17,33 +16,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// bcrypt 설정
-const saltRounds = 10;
-const defaultPassword = "123456";
-
-// 기존 학생 데이터에 비밀번호 필드 추가
-async function addPasswordToExistingStudents() {
+// 모든 문서의 password 필드를 passwordHash로 변경
+async function renamePasswordToPasswordHash() {
   try {
     // "users" 컬렉션의 모든 문서 가져오기
     const usersCollection = collection(db, "users");
     const userDocs = await getDocs(usersCollection);
 
-    // 각 문서에 대해 비밀번호 추가
+    // 각 문서의 password 필드를 passwordHash로 변경하고 password 삭제
     for (const userDoc of userDocs.docs) {
-      // 비밀번호 해싱
-      const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
-
-      // 문서 업데이트
+      const userData = userDoc.data();
+      
+      // password 필드가 존재하는 경우에만 업데이트
       await updateDoc(doc(db, "users", userDoc.id), {
-        password: hashedPassword
+        phrase : "오늘 하루도 수고했어요."
       });
     }
 
-    console.log("모든 학생 데이터에 비밀번호 필드가 성공적으로 추가되었습니다.");
+    console.log("모든 문서의 password 필드가 passwordHash로 성공적으로 변경되었습니다.");
   } catch (error) {
-    console.error("비밀번호 필드 추가 중 오류 발생:", error);
+    console.error("필드 이름 변경 중 오류 발생:", error);
   }
 }
 
 // 함수 실행
-addPasswordToExistingStudents();
+renamePasswordToPasswordHash();
