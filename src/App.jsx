@@ -129,7 +129,7 @@ function App() {
             }
           />
           <Route path="/" element={<HomeRedirect />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<LoginPage />} />
         </Routes>
       </AuthProvider>
     </div>

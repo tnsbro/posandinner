@@ -594,6 +594,13 @@
     padding: 2rem !important;
     font-size: 1rem !important;
   }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+    }
+  }
   
   /* --- Responsive Adjustments --- */
   @media (max-width: 768px) {
