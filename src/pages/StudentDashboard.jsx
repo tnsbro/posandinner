@@ -254,8 +254,6 @@ function StudentDashboard() {
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 한 마디</h2>
                 <p>{loggedInUserData.phrase || 'N/A'}</p>
             </div>
-            <br />
-            <br />
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">내 정보</h2>
                 <p>이름: {loggedInUserData.name || 'N/A'}</p>
@@ -263,8 +261,6 @@ function StudentDashboard() {
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
                 {/* 비밀번호 변경 버튼 추가 */}
             </div>
-            <br />
-            <br />
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">식권 QR 코드</h2>
                 {loggedInUserData.dinnerApplied && loggedInUserData.dinnerApproved && loggedInUserData.dinnerUsed === false ? (
