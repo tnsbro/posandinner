@@ -25,7 +25,7 @@ function ProtectedRoute({ children }) {
   }
 
   if (!loggedInUserData) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" />;
   }
 
   return children;
@@ -43,24 +43,24 @@ function HomeRedirect() {
   }
 
   if (!loggedInUserData) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login"/>;
   }
 
   if (loggedInUserData?.role === 'student') {
-    return <Navigate to="/student" replace />;
+    return <Navigate to="/student" />;
   }
   if (loggedInUserData?.role === 'teacher') {
-    return <Navigate to="/scan" replace />;
+    return <Navigate to="/scan" />;
   }
   if (loggedInUserData?.role === 'admin') {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin" />;
   }
   if (loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312') {
-    return <Navigate to="/phrasejae" replace />;
+    return <Navigate to="/phrasejae" />;
   }
 
   console.warn("알 수 없는 사용자 역할, 로그인 페이지로 이동:", loggedInUserData);
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/login" />;
 }
 
 function App() {
@@ -74,7 +74,7 @@ function App() {
       console.log(`새로고침 감지: 현재 경로(${location.pathname}) → 루트(/)로 리디렉션`);
       sessionStorage.setItem('hasLoaded', 'true');
       isRedirectedRef.current = true;
-      navigate('/', { replace: true });
+      navigate('/');
     }
   }, [location.pathname, navigate]);
 
