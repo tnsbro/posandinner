@@ -15,7 +15,6 @@ import PhraseCreater from './pages/phraseCreater';
 
 function ProtectedRoute({ children }) {
   const { loggedInUserData, loading } = useAuth();
-  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -26,8 +25,7 @@ function ProtectedRoute({ children }) {
   }
 
   if (!loggedInUserData) {
-    navigate('/login');
-    return true;
+    return <Navigate to="/login" />;
   }
 
   return children;
@@ -35,7 +33,6 @@ function ProtectedRoute({ children }) {
 
 function HomeRedirect() {
   const { loggedInUserData, loading } = useAuth();
-  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -46,8 +43,7 @@ function HomeRedirect() {
   }
 
   if (!loggedInUserData) {
-    navigate('/login');
-    return true;
+    return <Navigate to="/login" />;
   }
 
   if (loggedInUserData?.role === 'student') {
