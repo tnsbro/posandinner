@@ -68,6 +68,20 @@ function App() {
   const location = useLocation();
   const isRedirectedRef = useRef(false);
 
+  // 새로고침 방지 로직
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = ''; // 일부 브라우저에서 사용자에게 경고 메시지를 표시
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   useEffect(() => {
     const isFreshLoad = !sessionStorage.getItem('hasLoaded');
     if (isFreshLoad && location.pathname !== '/') {
@@ -165,6 +179,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;
