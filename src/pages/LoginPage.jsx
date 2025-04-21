@@ -1,5 +1,3 @@
-// src/pages/LoginPage.jsx
-
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -28,12 +26,14 @@ function LoginPage() {
 
   return (
     <div className="container-center">
+       <div>
+        <h1 className="text-center text-bold mb-4">포산고등학교</h1>
+      </div>
       <div>
-        <h1 className="text-center text-bold mb-4">SikOne (식권)</h1>
+        <h1 className="text-center text-bold ">SikOne (식권)</h1>
       </div>
       <div className="card">
-        <h2 className="text-center text-bold mb-4">로그인</h2>
-        {error && <p className="text-center text-gray">{error}</p>}
+        {error && <p className="text-center text-red-600">{error}</p>}
         <form onSubmit={handleSubmit}>
           <label htmlFor="email" className="text-gray text-bold">학반번호</label>
           <input
@@ -54,7 +54,7 @@ function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="button button-primary" disabled={loading}>
+          <button type="submit" className="button button-primary " disabled={loading}>
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>

@@ -48,9 +48,9 @@ function ChangePasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="container-center">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900">비밀번호 변경</h2>
+        <h2 className="text-2xl font-bold text-gray-800">비밀번호 변경</h2>
         {error && (
           <p className="text-sm text-red-600 text-center bg-red-100 p-2 rounded">{error}</p>
         )}
@@ -59,7 +59,7 @@ function ChangePasswordPage() {
         )}
         <form onSubmit={handleSubmit} className="mt-4 space-y-6">
           <div>
-            <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="current-password" className="text-gray text-bold">
               현재 비밀번호
             </label>
             <input
@@ -70,12 +70,12 @@ function ChangePasswordPage() {
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="input mb-4"
               placeholder="현재 비밀번호"
             />
           </div>
           <div>
-            <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="new-password" className="text-gray text-bold">
               새 비밀번호
             </label>
             <input
@@ -86,12 +86,12 @@ function ChangePasswordPage() {
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="input mb-4"
               placeholder="새 비밀번호"
             />
           </div>
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirm-password" className="text-gray text-bold">
               새 비밀번호 확인
             </label>
             <input
@@ -102,7 +102,7 @@ function ChangePasswordPage() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="input mb-4"
               placeholder="새 비밀번호 확인"
             />
           </div>
@@ -110,7 +110,7 @@ function ChangePasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="button button-primary"
             >
               {loading ? '변경 중...' : '비밀번호 변경'}
             </button>
@@ -119,7 +119,7 @@ function ChangePasswordPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="w-full mt-4 text-center text-sm text-gray-600 hover:text-gray-800"
+          className="button button-secondary"
         >
           취소
         </button>

@@ -223,14 +223,14 @@ function StudentDashboard() {
                 >
                     로그아웃
                 </button>
-                <span> </span>
+                <span> </span>
                 <button
                     onClick={() => navigate('/change-password')}
                     className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
                 >
                     비밀번호 변경
                 </button>
-                <span> </span>
+                <span> </span>
                 <button
                     onClick={() => navigate('/pixar')}
                     className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
@@ -239,7 +239,7 @@ function StudentDashboard() {
                 </button>
                 {loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312' ? (
                     <>
-                        <span> </span>
+                        <span> </span>
                         <button
                             onClick={() => navigate('/phrasejae')}
                             className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
@@ -248,7 +248,6 @@ function StudentDashboard() {
                         </button>
                     </>
                 ) : null}
-
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 한 마디</h2>
@@ -259,7 +258,6 @@ function StudentDashboard() {
                 <p>이름: {loggedInUserData.name || 'N/A'}</p>
                 <p>학년/반: {loggedInUserData.grade || '?'}학년 {loggedInUserData.classNum || '?'}반</p>
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
-                {/* 비밀번호 변경 버튼 추가 */}
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-3 text-gray-700">식권 QR 코드</h2>
@@ -294,7 +292,7 @@ function StudentDashboard() {
                     </p>
                 )}
             </div>
-
+            
         </div>
     );
 }
