@@ -70,6 +70,8 @@ function LoginPage() {
               박순형
             </a>
             {' '}
+            💛
+            {' '}
             <a
               href="https://www.instagram.com/isqepe" // Replace with actual Instagram URL
               className="footer-link"
