@@ -15,6 +15,7 @@ import PhraseCreater from './pages/phraseCreater';
 
 function ProtectedRoute({ children }) {
   const { loggedInUserData, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -24,7 +25,46 @@ function ProtectedRoute({ children }) {
     );
   }
 
+  if (!loggedInUserData) {
+    navigate('/login');
+    return true;
+  }
+
   return children;
+}
+
+function HomeRedirect() {
+  const { loggedInUserData, loading } = useAuth();
+  const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div>데이터 로딩 중...</div>
+      </div>
+    );
+  }
+
+  if (!loggedInUserData) {
+    navigate('/login');
+    return true;
+  }
+
+  if (loggedInUserData?.role === 'student') {
+    return <Navigate to="/student" />;
+  }
+  if (loggedInUserData?.role === 'teacher') {
+    return <Navigate to="/scan" />;
+  }
+  if (loggedInUserData?.role === 'admin') {
+    return <Navigate to="/admin" />;
+  }
+  if (loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312') {
+    return <Navigate to="/phrasejae" />;
+  }
+
+  console.warn("알 수 없는 사용자 역할, 로그인 페이지로 이동:", loggedInUserData);
+  return <Navigate to="/login" />;
 }
 
 function App() {
@@ -52,14 +92,47 @@ function App() {
     <div className="App">
       <AuthProvider>
         <Routes>
-          {loggedInUserData?.role === 'student' && <Route path="/student" element={<StudentDashboard />} />}
-          {loggedInUserData?.role === 'teacher' && <Route path="/scan" element={<ScanPage />} />}
-          {loggedInUserData?.role === 'admin' && <Route path="/admin" element={<AdminPage />} />}
-          {loggedInUserData?.email === '3404' && <Route path="/phrasejae" element={<PhraseCreater />} />}
-          {loggedInUserData?.email === '3312' && <Route path="/phrasejae" element={<PhraseCreater />} />}
-          {loggedInUserData?.role === 'student' && <Route path="/pixar" element={<Pixar />} />}
-          {loggedInUserData?.role === 'student' && <Route path="/pixar" element={<ChangePasswordPage />} />}
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/pixar" element={<Pixar />} />
+          <Route path="/phrasejae" element={
+            <ProtectedRoute>
+              <PhraseCreater />
+            </ProtectedRoute>
+          }
+          />
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scan"
+            element={
+              <ProtectedRoute>
+                <ScanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePasswordPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<HomeRedirect />} />
           <Route path="*" element={<LoginPage />} />
         </Routes>
       </AuthProvider>
