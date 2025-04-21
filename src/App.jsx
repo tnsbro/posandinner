@@ -13,8 +13,9 @@ import Pixar from './pages/ScanerPicture';
 import './sch.css';
 import PhraseCreater from './pages/phraseCreater';
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowedRoles, allowedEmails }) {
   const { loggedInUserData, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -26,6 +27,15 @@ function ProtectedRoute({ children }) {
 
   if (!loggedInUserData) {
     return <Navigate to="/login" />;
+  }
+
+  // 역할 또는 이메일 기반 접근 제한
+  const isRoleAllowed = allowedRoles ? allowedRoles.includes(loggedInUserData.role) : true;
+  const isEmailAllowed = allowedEmails ? allowedEmails.includes(loggedInUserData.email) : true;
+
+  if (!isRoleAllowed || !isEmailAllowed) {
+    console.warn(`권한 없는 경로 접근 감지: ${location.pathname} → 루트(/)로 리디렉션`);
+    return <Navigate to="/" />;
   }
 
   return children;
@@ -46,17 +56,18 @@ function HomeRedirect() {
     return <Navigate to="/login" />;
   }
 
-  if (loggedInUserData?.role === 'student') {
+  // 역할 또는 이메일에 따라 초기 리디렉션
+  if (loggedInUserData.email === '3404' || loggedInUserData.email === '3312') {
+    return <Navigate to="/phrasejae" />;
+  }
+  if (loggedInUserData.role === 'student') {
     return <Navigate to="/student" />;
   }
-  if (loggedInUserData?.role === 'teacher') {
+  if (loggedInUserData.role === 'teacher') {
     return <Navigate to="/scan" />;
   }
-  if (loggedInUserData?.role === 'admin') {
+  if (loggedInUserData.role === 'admin') {
     return <Navigate to="/admin" />;
-  }
-  if (loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312') {
-    return <Navigate to="/phrasejae" />;
   }
 
   console.warn("알 수 없는 사용자 역할, 로그인 페이지로 이동:", loggedInUserData);
@@ -90,16 +101,18 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/pixar" element={<Pixar />} />
-          <Route path="/phrasejae" element={
-            <ProtectedRoute>
-              <PhraseCreater />
-            </ProtectedRoute>
-          }
+          <Route
+            path="/phrasejae"
+            element={
+              <ProtectedRoute allowedEmails={['3404', '3312']}>
+                <PhraseCreater />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/student"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['student']}>
                 <StudentDashboard />
               </ProtectedRoute>
             }
@@ -107,7 +120,7 @@ function App() {
           <Route
             path="/scan"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['teacher']}>
                 <ScanPage />
               </ProtectedRoute>
             }
@@ -115,7 +128,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminPage />
               </ProtectedRoute>
             }
@@ -123,23 +136,22 @@ function App() {
           <Route
             path="/change-password"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
                 <ChangePasswordPage />
               </ProtectedRoute>
             }
           />
           <Route path="/" element={<HomeRedirect />} />
-          <Route path="*" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>
       <footer className="footer">
-        {
-          location.pathname !== '/login' &&
+        {location.pathname !== '/login' && (
           <div className="footer">
             <p>
               Powered by{' '}
               <a
-                href="https://www.instagram.com/tnsbro_" // Replace with actual Instagram URL
+                href="https://www.instagram.com/tnsbro_"
                 className="footer-link"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -150,7 +162,7 @@ function App() {
               💛
               {' '}
               <a
-                href="https://www.instagram.com/isqepe" // Replace with actual Instagram URL
+                href="https://www.instagram.com/isqepe"
                 className="footer-link"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -159,12 +171,11 @@ function App() {
               </a>
             </p>
           </div>
-        }
+        )}
         ⓒ 2025 포산고등학교. All rights reserved.
       </footer>
     </div>
   );
 }
-
 
 export default App;
