@@ -133,28 +133,31 @@ function App() {
         </Routes>
       </AuthProvider>
       <footer className="footer">
-        <div className="footer">
-          <p>
-            Powered by{' '}
-            <a
-              href="https://www.instagram.com/isqepe" // Replace with actual Instagram URL
-              className="footer-link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              정재윤
-            </a>{' '}
-            💛{' '}
-            <a
-              href="https://www.instagram.com/tnsbro_" // Replace with actual Instagram URL
-              className="footer-link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              박순형
-            </a>
-          </p>
-        </div>
+        {
+          location.pathname !== '/login' &&
+          <div className="footer">
+            <p>
+              Powered by{' '}
+              <a
+                href="https://www.instagram.com/tnsbro_" // Replace with actual Instagram URL
+                className="footer-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                박순형
+              </a>
+              {' '}
+              <a
+                href="https://www.instagram.com/isqepe" // Replace with actual Instagram URL
+                className="footer-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                정재윤
+              </a>
+            </p>
+          </div>
+        }
         ⓒ 2025 포산고등학교. All rights reserved.
       </footer>
     </div>

@@ -26,7 +26,7 @@ function LoginPage() {
 
   return (
     <div className="container-center">
-       <div>
+      <div>
         <h1 className="text-center text-bold mb-4">포산고등학교</h1>
       </div>
       <div>
@@ -58,7 +58,30 @@ function LoginPage() {
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
+        <div className="footer">
+          <p>
+            Powered by{' '}
+            <a
+              href="https://www.instagram.com/tnsbro_" // Replace with actual Instagram URL
+              className="footer-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              박순형
+            </a>
+            {' '}
+            <a
+              href="https://www.instagram.com/isqepe" // Replace with actual Instagram URL
+              className="footer-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              정재윤
+            </a>
+          </p>
+        </div>
       </div>
+
     </div>
   );
 }
