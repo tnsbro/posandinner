@@ -1,9 +1,10 @@
 // src/pages/AdminPage.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import useDataExist from './isDataExist';
 
 function AdminPage() {
     const { logout } = useAuth();
@@ -13,6 +14,8 @@ function AdminPage() {
     const [error, setError] = useState('');     // 오류 메시지 상태
     const [filterApplied, setFilterApplied] = useState(false); // 신청자 필터링 상태
     const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
+
+    useDataExist(); // 사용자 데이터 존재 여부 확인
 
     // Firestore에서 학생 목록 가져오기
     const fetchStudents = useCallback(async () => {
@@ -45,14 +48,12 @@ function AdminPage() {
 
     // 학생 석식 승인 상태 업데이트 함수
     const handleApprovalChange = async (studentUid, currentApprovalStatus) => {
-        console.log(`승인 상태 변경 시도: UID=${studentUid}, 현재=${currentApprovalStatus}`);
         const newApprovalStatus = !currentApprovalStatus; // 상태 반전
         const studentDocRef = doc(db, "users", studentUid);
         try {
             await updateDoc(studentDocRef, {
                 dinnerApproved: newApprovalStatus // Firestore 문서 업데이트
             });
-            console.log("승인 상태 업데이트 성공");
             // 로컬 상태 업데이트하여 즉시 반영
             setStudents(prevStudents =>
                 prevStudents.map(student =>
@@ -103,7 +104,6 @@ function AdminPage() {
 
         try {
             await batch.commit();
-            console.log(`일괄 처리 완료: ${actionCount}명 상태 변경 (${approveAction ? '승인' : '취소'})`);
             // 변경 사항 반영 위해 학생 목록 다시 불러오기
             await fetchStudents();
         } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import useDataExist from './isDataExist';
 
 function Pixar() {
   const { loggedInUserData, logout } = useAuth();
@@ -12,7 +13,9 @@ function Pixar() {
   const [isInitializing, setIsInitializing] = useState(false);
   const html5QrCodeScannerRef = useRef(null);
   const qrReaderId = 'qr-reader-teacher';
-  const cleanupRef = useRef(false);
+  const cleanupRef = useRef(false); 
+
+  useDataExist(); // 사용자 데이터 존재 여부 확인
 
   // 디버그 모드 확인 (?debug=true URL 파라미터)
   const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
@@ -49,7 +52,6 @@ function Pixar() {
 
   // 스캔 성공 처리
   const onScanSuccess = useCallback((decodedText) => {
-    console.log(`스캔 성공: ${decodedText}`);
     setScanError('');
   }, []);
 
@@ -62,7 +64,7 @@ function Pixar() {
 
   // 스캐너 시작
   const startScanner = useCallback(
-    async (attempt = 1, maxAttempts = 3, cameraConstraints = { facingMode: 'environment' }) => {
+    async (attempt = 1, maxAttempts = 3, cameraConstraints = { facingMode: 'user' }) => {
       if (cleanupRef.current || !isLibraryLoaded) return;
 
       const container = document.getElementById(qrReaderId);
@@ -93,8 +95,6 @@ function Pixar() {
           aspectRatio: 1.0,
           showTorchButtonIfSupported: true,
         };
-
-        console.log(`스캐너 시작 시도 (시도 ${attempt}/${maxAttempts}) with constraints:`, cameraConstraints);
         await html5QrCodeScannerRef.current.start(cameraConstraints, config, onScanSuccess, onScanFailure);
 
         const videoElement = container.querySelector('video');
@@ -104,18 +104,14 @@ function Pixar() {
 
         setIsScanning(true);
         setIsInitializing(false);
-        console.log('스캐너 성공적으로 시작됨');
       } catch (err) {
         console.error(`스캐너 시작 오류 (시도 ${attempt}):`, err);
         if (attempt < maxAttempts && err.name === 'AbortError' && err.message.includes('Timeout starting video source')) {
-          console.log(`스캐너 시작 재시도 (시도 ${attempt + 1})...`);
           await new Promise((resolve) => setTimeout(resolve, 1000));
           return startScanner(attempt + 1, maxAttempts, cameraConstraints);
-        } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'environment') {
-          console.log('전면 카메라로 대체...');
-          return startScanner(1, maxAttempts, { facingMode: 'user' });
         } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'user') {
-          console.log('임의의 카메라로 대체...');
+          return startScanner(1, maxAttempts, { facingMode: 'environment' });
+        } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'environment') {
           return startScanner(1, maxAttempts, {});
         }
 
@@ -145,7 +141,6 @@ function Pixar() {
       script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
       script.async = true;
       script.onload = () => {
-        console.log('Html5Qrcode 라이브러리 로드 완료');
         setIsLibraryLoaded(true);
       };
       script.onerror = () => {
@@ -154,7 +149,6 @@ function Pixar() {
       };
       document.head.appendChild(script);
     } else if (typeof window.Html5Qrcode !== 'undefined') {
-      console.log('Html5Qrcode 라이브러리 이미 로드됨');
       setIsLibraryLoaded(true);
     }
 
@@ -169,7 +163,6 @@ function Pixar() {
   // 교사용 자동 스캐너 시작
   useEffect(() => {
     if (isLibraryLoaded && !isScanning && !isInitializing) {
-      console.log('스캐너 자동 시작 시도');
       startScanner();
     }
   }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing]);

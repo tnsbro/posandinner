@@ -4,18 +4,25 @@ import { collection, addDoc, query, where, getDocs, doc, onSnapshot, updateDoc }
 import { db } from '../firebaseConfig';
 import bcrypt from 'bcryptjs';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    console.error('useAuth called outside AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  console.log('useAuth context:', context);
+  return context;
 }
 
 export function AuthProvider({ children }) {
   const [loggedInUserData, setLoggedInUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [realtimeLoading, setRealtimeLoading] = useState(false);
 
-  // 로그인 함수
+  console.log('AuthProvider rendered, loading:', loading, 'loggedInUserData:', loggedInUserData);
+
   const login = async (email, password) => {
     setLoading(true);
     try {
@@ -45,6 +52,7 @@ export function AuthProvider({ children }) {
 
       console.log("Login successful for user:", userData.uid);
       setLoggedInUserData(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
       setLoading(false);
       return userData;
     } catch (error) {
@@ -55,14 +63,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 로그아웃 함수
   const logout = () => {
     console.log("Custom logout");
     setLoggedInUserData(null);
+    localStorage.removeItem('user');
     return Promise.resolve();
   };
 
-  // 회원가입 함수
   const signup = async (email, password, additionalUserData = {}) => {
     try {
       const saltRounds = 10;
@@ -84,6 +91,7 @@ export function AuthProvider({ children }) {
         role: 'student',
       };
       setLoggedInUserData(newUserData);
+      localStorage.setItem('user', JSON.stringify(newUserData));
       return newUserData;
     } catch (error) {
       console.error("회원가입 실패:", error);
@@ -91,14 +99,12 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 비밀번호 변경 함수 (새로 추가)
   const changePassword = async (currentPassword, newPassword) => {
     if (!loggedInUserData?.uid) {
       throw new Error("로그인된 사용자가 없습니다.");
     }
 
     try {
-      // 현재 비밀번호 검증
       const userDocRef = doc(db, "users", loggedInUserData.uid);
       const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", loggedInUserData.email)));
       if (userDoc.empty) {
@@ -115,11 +121,9 @@ export function AuthProvider({ children }) {
         throw new Error("현재 비밀번호가 일치하지 않습니다.");
       }
 
-      // 새 비밀번호 해시 생성
       const saltRounds = 10;
       const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
 
-      // Firestore에 새 비밀번호 해시 업데이트
       await updateDoc(userDocRef, {
         passwordHash: newPasswordHash,
         updatedAt: new Date(),
@@ -133,7 +137,14 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 실시간 리스너 설정
+  useEffect(() => {
+    console.log('Checking for stored user data');
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setLoggedInUserData(JSON.parse(storedUser));
+    }
+  }, []);
+
   useEffect(() => {
     let unsubscribe = null;
 
@@ -147,9 +158,11 @@ export function AuthProvider({ children }) {
           const updatedUserData = { uid: docSnapshot.id, ...docSnapshot.data() };
           console.log("Real-time user data update:", updatedUserData);
           setLoggedInUserData(updatedUserData);
+          localStorage.setItem('user', JSON.stringify(updatedUserData));
         } else {
           console.warn("User document no longer exists. Logging out.");
           setLoggedInUserData(null);
+          localStorage.removeItem('user');
         }
         setRealtimeLoading(false);
       }, (error) => {
@@ -172,11 +185,6 @@ export function AuthProvider({ children }) {
     };
   }, [loggedInUserData?.uid]);
 
-  // 초기 로딩 상태
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-
   const value = {
     loggedInUserData,
     loading,
@@ -184,13 +192,13 @@ export function AuthProvider({ children }) {
     login,
     logout,
     signup,
-    changePassword, // 새로 추가
+    changePassword,
     currentUser: null,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

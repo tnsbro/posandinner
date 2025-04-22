@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import axios from 'axios';
+import useDataExist from './isDataExist';
 
 function StudentDashboard() {
     const { loggedInUserData, logout } = useAuth();
@@ -27,12 +28,10 @@ function StudentDashboard() {
         const month = String(kstTime.getUTCMonth() + 1).padStart(2, '0');
         const day = String(kstTime.getUTCDate()).padStart(2, '0');
         const dateString = `${year}-${month}-${day}`;
-        console.log(`Generated KST Date: ${dateString}`);
         return dateString;
     };
 
     const clearQRCodeDisplay = () => {
-        console.log("Clearing QR Code Display");
         if (easyQRCodeInstanceRef.current) {
             easyQRCodeInstanceRef.current.clear();
         }
@@ -41,6 +40,8 @@ function StudentDashboard() {
         }
         setGeneratedQrDataString(null);
     };
+
+    useDataExist(); // 사용자 데이터 존재 여부 확인
 
     // Fetch dinner menu from NEIS API
     useEffect(() => {
@@ -60,17 +61,14 @@ function StudentDashboard() {
                 const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=e551d44107644bb582cdd21f692e6dd4&Type=xml&pIndex=1&pSize=100&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7240189&MLSV_FROM_YMD=${date}&MLSV_TO_YMD=${date}`;
                 const response = await axios.get(url);
 
-                console.log('API Response:', response.data);
 
                 // Parse XML response
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(response.data, 'text/xml');
-                console.log('Parsed XML Document:', xmlDoc);
                 
                 // Check for error codes in the response
                 // NEIS API typically returns error codes directly under the root in a <RESULT> tag
                 const resultCode = xmlDoc.getElementsByTagName('RESULT')[0]?.getElementsByTagName('CODE')[0]?.textContent;
-                console.log('Result Code:', resultCode);
                 if (resultCode && resultCode !== 'INFO-000') {
                     if (resultCode === 'INFO-200') {
                         setMenuError('오늘의 석식 메뉴가 없습니다. (데이터 없음)');
@@ -84,16 +82,13 @@ function StudentDashboard() {
 
                 // Find the meal entry for dinner (MMEAL_SC_NM = "석식")
                 const rows = xmlDoc.getElementsByTagName('row');
-                console.log('Number of rows in response:', rows.length);
                 let dinnerMenuText = null;
 
                 for (let i = 0; i < rows.length; i++) {
                     const mealType = rows[i].getElementsByTagName('MMEAL_SC_NM')[0]?.textContent;
                     const mealDate = rows[i].getElementsByTagName('MLSV_YMD')[0]?.textContent;
-                    console.log(`Row ${i}: Meal Type = ${mealType}, Date = ${mealDate}`);
                     if (mealType === '석식') {
                         dinnerMenuText = rows[i].getElementsByTagName('DDISH_NM')[0]?.textContent;
-                        console.log('Dinner Menu Text:', dinnerMenuText);
                         break;
                     }
                 }
@@ -105,7 +100,6 @@ function StudentDashboard() {
                         .split('<br/>')
                         .map(item => item.trim())
                         .filter(item => item);
-                    console.log('Cleaned Dinner Menu:', cleanedMenu);
                     setDinnerMenu(cleanedMenu);
                     setMenuError(null);
                 } else {
@@ -153,7 +147,6 @@ function StudentDashboard() {
         const interval = setInterval(() => {
             const currentKstDate = getTodayKSTString();
             if (currentKstDate !== todayDate) {
-                console.log(`Date Rollover Detected: ${todayDate} -> ${currentKstDate}`);
                 setTodayDate(currentKstDate);
                 setMessage({ text: '새로운 날짜가 시작되었습니다.', type: 'info' });
             }
@@ -171,11 +164,6 @@ function StudentDashboard() {
             const lastUsedDate = loggedInUserData.lastUsedDate.trim();
             const normalizedTodayDate = todayDate.trim();
 
-            console.log('Date Comparison:');
-            console.log(`lastUsedDate: "${lastUsedDate}" (length: ${lastUsedDate.length})`);
-            console.log(`todayDate: "${normalizedTodayDate}" (length: ${normalizedTodayDate.length})`);
-            console.log(`Strict Equality (===): ${lastUsedDate === normalizedTodayDate}`);
-
             const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
             if (!dateFormatRegex.test(lastUsedDate)) {
                 console.warn(`Invalid lastUsedDate format: ${lastUsedDate}. Skipping reset.`);
@@ -183,7 +171,6 @@ function StudentDashboard() {
             }
 
             if (lastUsedDate !== normalizedTodayDate) {
-                console.log(`Date mismatch detected: ${lastUsedDate} vs ${normalizedTodayDate}. Resetting Firestore.`);
                 const userDocRef = doc(db, 'users', loggedInUserData.uid);
                 updateDoc(userDocRef, {
                     dinnerUsed: false,
@@ -210,12 +197,6 @@ function StudentDashboard() {
     }, [loggedInUserData?.uid, loggedInUserData?.lastUsedDate, loggedInUserData?.dinnerUsed, todayDate]);
 
     useEffect(() => {
-        console.log("QR Rendering Effect:", {
-            isQrLibLoaded,
-            generatedQrDataString: !!generatedQrDataString,
-            dinnerUsed: loggedInUserData?.dinnerUsed,
-        });
-
         if (!loggedInUserData || loggedInUserData.dinnerUsed === true) {
             clearQRCodeDisplay();
             return;
@@ -238,7 +219,6 @@ function StudentDashboard() {
                     correctLevel: window.QRCode.CorrectLevel.M,
                 });
                 setMessage({ text: 'QR 코드가 생성되었습니다. 스캔해주세요.', type: 'success' });
-                console.log("QR Code generated successfully.");
             } catch (e) {
                 console.error('QR 코드 생성 오류:', e);
                 setMessage({ text: `QR 코드 생성 실패: ${e.message}`, type: 'error' });
@@ -289,7 +269,6 @@ function StudentDashboard() {
             nonce: nonce,
         };
         const qrString = JSON.stringify(qrData);
-        console.log("Generated QR Data String:", qrString);
         setGeneratedQrDataString(qrString);
     };
 

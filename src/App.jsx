@@ -1,170 +1,136 @@
-import React, { useEffect, useRef } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
 
 import LoginPage from './pages/LoginPage';
 import StudentDashboard from './pages/StudentDashboard';
 import ScanPage from './pages/ScanPage';
 import AdminPage from './pages/AdminPage';
-import NotFoundPage from './pages/NotFoundPage';
-import SignupPage from './pages/SignupPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import Pixar from './pages/ScanerPicture';
-import './sch.css';
 import PhraseCreater from './pages/phraseCreater';
+import './sch.css';
 
-function ProtectedRoute({ children }) {
-  const { loggedInUserData, loading } = useAuth();
+const PrivateRoute = ({ element, allowedRoles }) => {
+  const { loggedInUserData } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div>데이터 로딩 중...</div>
-      </div>
-    );
-  }
+  console.log('PrivateRoute, loggedInUserData:', loggedInUserData);
 
   if (!loggedInUserData) {
-    return <Navigate to="/login" />;
+    return <LoginPage />;
   }
 
-  return children;
-}
-
-function HomeRedirect() {
-  const { loggedInUserData, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div>데이터 로딩 중...</div>
-      </div>
-    );
+  if (allowedRoles && !allowedRoles.includes(loggedInUserData.role)) {
+    return <LoginPage />;
   }
 
-  if (!loggedInUserData) {
-    return <Navigate to="/login" />;
-  }
-
-  if (loggedInUserData?.role === 'student') {
-    return <Navigate to="/student" />;
-  }
-  if (loggedInUserData?.role === 'teacher') {
-    return <Navigate to="/scan" />;
-  }
-  if (loggedInUserData?.role === 'admin') {
-    return <Navigate to="/admin" />;
-  }
-  if (loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312') {
-    return <Navigate to="/phrasejae" />;
-  }
-
-  console.warn("알 수 없는 사용자 역할, 로그인 페이지로 이동:", loggedInUserData);
-  return <Navigate to="/login" />;
-}
+  return element;
+};
 
 function App() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const isRedirectedRef = useRef(false);
+  const { loggedInUserData, loading } = useAuth();
+  const [timeoutError, setTimeoutError] = useState(false);
 
-  // 새로고침 방지 로직
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      event.preventDefault();
-      event.returnValue = ''; // 일부 브라우저에서 사용자에게 경고 메시지를 표시
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  console.log('App rendered, loading:', loading, 'loggedInUserData:', loggedInUserData);
 
   useEffect(() => {
-    const isFreshLoad = !sessionStorage.getItem('hasLoaded');
-    if (isFreshLoad && location.pathname !== '/') {
-      console.log(`새로고침 감지: 현재 경로(${location.pathname}) → 루트(/)로 리디렉션`);
-      sessionStorage.setItem('hasLoaded', 'true');
-      isRedirectedRef.current = true;
-      navigate('/');
+    if (loading) {
+      const timer = setTimeout(() => {
+        setTimeoutError(true);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [location.pathname, navigate]);
+  }, [loading]);
 
-  useEffect(() => {
-    if (!isRedirectedRef.current) {
-      sessionStorage.setItem('hasLoaded', 'true');
-    }
-  }, []);
+  if (loading) {
+    return (
+      <div>
+        {timeoutError ? (
+          <div className="text-center p-4 text-red-600">
+            로딩이 너무 오래 걸립니다. 네트워크를 확인하거나 새로고침하세요.
+          </div>
+        ) : (
+          <div className="text-center p-4">Loading...</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="App">
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/pixar" element={<Pixar />} />
-          <Route path="/phrasejae" element={
-            <ProtectedRoute>
-              <PhraseCreater />
-            </ProtectedRoute>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/student"
+          element={<PrivateRoute element={<StudentDashboard />} allowedRoles={['student']} />}
+        />
+        <Route
+          path="/change-password"
+          element={<PrivateRoute element={<ChangePasswordPage />} allowedRoles={['student']} />}
+        />
+        <Route
+          path="/pixar"
+          element={<PrivateRoute element={<Pixar />} allowedRoles={['student']} />}
+        />
+        <Route
+          path="/phrasejae"
+          element={<PrivateRoute element={<PhraseCreater />} allowedRoles={['student']} />}
+        />
+        <Route
+          path="/scan"
+          element={<PrivateRoute element={<ScanPage />} allowedRoles={['teacher']} />}
+        />
+        <Route
+          path="/admin"
+          element={<PrivateRoute element={<AdminPage />} allowedRoles={['admin']} />}
+        />
+        <Route
+          path="/"
+          element={
+            loggedInUserData ? (
+              {
+                student: <StudentDashboard />,
+                teacher: <ScanPage />,
+                admin: <AdminPage />,
+              }[loggedInUserData.role] || <LoginPage />
+            ) : (
+              <LoginPage />
+            )
           }
-          />
-          <Route
-            path="/student"
-            element={
-              <ProtectedRoute>
-                <StudentDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/scan"
-            element={
-              <ProtectedRoute>
-                <ScanPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/change-password"
-            element={
-              <ProtectedRoute>
-                <ChangePasswordPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/" element={<HomeRedirect />} />
-          <Route path="*" element={<LoginPage />} />
-        </Routes>
-      </AuthProvider>
-      <footer className="footer">
-        {
-          location.pathname !== '/login' &&
+        />
+        <Route
+          path="*"
+          element={
+            loggedInUserData ? (
+              {
+                student: <StudentDashboard />,
+                teacher: <ScanPage />,
+                admin: <AdminPage />,
+              }[loggedInUserData.role] || <LoginPage />
+            ) : (
+              <LoginPage />
+            )
+          }
+        />
+      </Routes>
+
+      {location.pathname !== '/login' && (
+        <footer className="footer">
           <div className="footer">
             <p>
               Powered by{' '}
               <a
-                href="https://www.instagram.com/tnsbro_" // Replace with actual Instagram URL
+                href="https://www.instagram.com/tnsbro_"
                 className="footer-link"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 박순형
-              </a>
-              {' '}
-              💛
-              {' '}
+              </a>{' '}
+              💛{' '}
               <a
-                href="https://www.instagram.com/isqepe" // Replace with actual Instagram URL
+                href="https://www.instagram.com/isqepe"
                 className="footer-link"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -173,9 +139,9 @@ function App() {
               </a>
             </p>
           </div>
-        }
-        ⓒ 2025 포산고등학교. All rights reserved.
-      </footer>
+          ⓒ 2025 포산고등학교. All rights reserved.
+        </footer>
+      )}
     </div>
   );
 }

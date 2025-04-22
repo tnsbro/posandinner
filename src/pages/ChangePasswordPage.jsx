@@ -1,7 +1,8 @@
 // src/pages/ChangePasswordPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import useDataExist from './isDataExist';
 
 function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -12,6 +13,8 @@ function ChangePasswordPage() {
   const [loading, setLoading] = useState(false);
   const { changePassword, logout } = useAuth();
   const navigate = useNavigate();
+
+  useDataExist(); // 사용자 데이터 존재 여부 확인
 
   const handleSubmit = async (e) => {
     e.preventDefault();

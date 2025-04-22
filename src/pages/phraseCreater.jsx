@@ -2,7 +2,7 @@ import { collection, getDocs, updateDoc, doc, query, where } from "firebase/fire
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { db } from "../firebaseConfig";
-import { useRef } from "react";
+import useDataExist from "./isDataExist";
 
 function PhraseCreater() {
   const [num, setNum] = useState(0);
@@ -10,6 +10,8 @@ function PhraseCreater() {
   const [target, setTarget] = useState('');
   const [su, setSu] = useState('');
   const navigate = useNavigate();
+
+  useDataExist();
 
   const one = async (sch, target) => {
     if (target === '') {
@@ -20,14 +22,16 @@ function PhraseCreater() {
 
         // 각 문서의 phrase 필드를 업데이트
         for (const userDoc of userDocs.docs) {
-          try {
-            await updateDoc(doc(db, "users", userDoc.id), {
-              phrase: sch,
-            });
-            // Increment count after each successful update
-            setNum(prev => prev + 1);
-          } catch (error) {
-            console.error(`Error updating document ${userDoc.id}:`, error);
+          if (userDoc.data().phrase !== undefined) {
+            try {
+              await updateDoc(doc(db, "users", userDoc.id), {
+                phrase: sch,
+              });
+              // Increment count after each successful update
+              setNum(prev => prev + 1);
+            } catch (error) {
+              console.error(`Error updating document ${userDoc.id}:`, error);
+            }
           }
         }
       } catch (error) {
@@ -39,7 +43,6 @@ function PhraseCreater() {
         const usersCollection = collection(db, "users");
 
         for (const targets of targetArray) {
-          console.log(targets);
           const q = query(usersCollection, where("email", "==", targets));
           const querySnapshot = await getDocs(q);
 
