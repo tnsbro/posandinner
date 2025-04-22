@@ -37,7 +37,7 @@ function LoginPage() {
           <h1 className="text-center text-bold mb-4">포산고등학교</h1>
         </div>
         <div>
-          <h1 className="text-center text-bold " style={{'textAlign' : 'center'}}>SikOne (식권)</h1>
+          <h1 className="text-center text-bold " style={{ 'textAlign': 'center' }}>SikOne (식권)</h1>
         </div>
         {error && <p className="text-sm text-red-600 text-center bg-red-100 p-2 rounded">{error}</p>}
         <form onSubmit={handleSubmit}>
@@ -82,8 +82,31 @@ function LoginPage() {
                 {loading ? '로그인 중...' : '로그인'}
               </button>
             </div>
+            <div className="footer">
+              <p>
+                Powered by{' '}
+                <a
+                  href="https://www.instagram.com/tnsbro_"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  박순형
+                </a>{' '}
+                💛{' '}
+                <a
+                  href="https://www.instagram.com/isqepe"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  정재윤
+                </a>
+              </p>
+            </div>
           </div>
         </form>
+
       </div>
     </div>
   );
