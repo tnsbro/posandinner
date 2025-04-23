@@ -380,8 +380,8 @@ function StudentDashboard() {
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
             </div>
             <div className="footer">
-        
-               <p>
+            
+              <p>
                 <a
                   href="https://www.instagram.com/tnsbro_"
                   className="footer-link"
@@ -400,14 +400,13 @@ function StudentDashboard() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  ?
+                  정재윤
                 </a>{' '}
                 💛{' '}
               </p>
-
-      
-                
-        </div>
+            </div>
+            
+    </div>
     );
 }
 
