@@ -369,6 +369,28 @@ function ScanPage() {
           )}
         </div>
       </div>
+      <div className="footer">
+              <p>
+                Powered by{' '}
+                <a
+                  href="https://www.instagram.com/tnsbro_"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  박순형
+                </a>{' '}
+                💛{' '}
+                <a
+                  href="https://www.instagram.com/isqepe"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  정재윤
+                </a>
+              </p>
+            </div>
     </div>
   );
 }
