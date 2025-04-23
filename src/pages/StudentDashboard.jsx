@@ -393,7 +393,7 @@ function StudentDashboard() {
                         박순형
                     </a>{' '}
                     ❤️{' '}{' '} <a
-                        href="https://www.instagram.com/jimin"
+                        href="https://www.instagram.com/katarinabluu"
                         className="footer-link"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -403,7 +403,7 @@ function StudentDashboard() {
                 </p>
                 <p>
                     <a
-                        href="https://www.instagram.com/chaewon"
+                        href="https://www.instagram.com/isqepe"
                         className="footer-link"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -411,7 +411,7 @@ function StudentDashboard() {
                         정재윤
                     </a>{' '}
                     ❤️{' '}{' '} <a
-                        href="https://www.instagram.com/ye"
+                        href="https://www.instagram.com/blonded"
                         className="footer-link"
                         target="_blank"
                         rel="noopener noreferrer"
