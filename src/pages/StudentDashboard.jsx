@@ -394,11 +394,6 @@ function StudentDashboard() {
                     </a>{' '}
                     💛{' '}?
                 </p>
-
-                
-            </div>
-
-            <div className="footer">
                 <p>
                     <a
                         href="https://www.instagram.com/isqepe"
@@ -411,7 +406,8 @@ function StudentDashboard() {
                     💛{' '}?
                 </p>
 
-               
+
+                
             </div>
 
         </div>
