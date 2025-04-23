@@ -380,8 +380,10 @@ function ScanPage() {
                   박순형
                 </a>{' '}
                 💛{' '}
+              </p>
                 <br>
-               
+                <br>
+              <p>
                 <a
                   href="https://www.instagram.com/isqepe"
                   className="footer-link"
