@@ -382,8 +382,7 @@ function ScanPage() {
                 </a>{' '}
                 💛{' '}
               </p>
-                <br>
-                <br>
+               
               <p>
                 <a
                   href="https://www.instagram.com/isqepe"
