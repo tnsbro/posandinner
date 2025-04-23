@@ -392,20 +392,10 @@ function StudentDashboard() {
                     >
                         박순형
                     </a>{' '}
-                    💛{' '}
+                    💛{' '}?
                 </p>
 
-                <p>
-                    <a
-                        href=""
-                        className="footer-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        ?
-                    </a>{' '}
-                    💛{' '}
-                </p>
+                
             </div>
 
             <div className="footer">
@@ -418,20 +408,10 @@ function StudentDashboard() {
                     >
                         정재윤
                     </a>{' '}
-                    💛{' '}
+                    💛{' '}?
                 </p>
 
-                <p>
-                    <a
-                        href=""
-                        className="footer-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        ?
-                    </a>{' '}
-                    💛{' '}
-                </p>
+               
             </div>
 
         </div>
