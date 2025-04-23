@@ -397,12 +397,38 @@ function StudentDashboard() {
 
                     <p>
                         <a
+                            href=""
+                            className="footer-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ?
+                        </a>{' '}
+                        💛{' '}
+                    </p>
+                </div>
+
+
+                <p>
+                        <a
                             href="https://www.instagram.com/isqepe"
                             className="footer-link"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             정재윤
+                        </a>{' '}
+                        💛{' '}
+                    </p>
+
+                    <p>
+                        <a
+                            href=""
+                            className="footer-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ?
                         </a>{' '}
                         💛{' '}
                     </p>
