@@ -65,7 +65,7 @@ function StudentDashboard() {
                 // Parse XML response
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(response.data, 'text/xml');
-                
+
                 // Check for error codes in the response
                 // NEIS API typically returns error codes directly under the root in a <RESULT> tag
                 const resultCode = xmlDoc.getElementsByTagName('RESULT')[0]?.getElementsByTagName('CODE')[0]?.textContent;
@@ -287,127 +287,129 @@ function StudentDashboard() {
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-md">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold text-gray-800">학생 대시보드</h1>
-                <button
-                    onClick={handleLogout}
-                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-                >
-                    로그아웃
-                </button>
-                <span> </span>
-                <button
-                    onClick={() => navigate('/change-password')}
-                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-                >
-                    비밀번호 변경
-                </button>
-                <span> </span>
-                <button
-                    onClick={() => navigate('/pixar')}
-                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-                >
-                    사진 찍기
-                </button>
-                {loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312' ? (
-                    <>
-                        <span> </span>
-                        <button
-                            onClick={() => navigate('/phrasejae')}
-                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+
+        
+            <div className="container mx-auto p-4 max-w-md">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold text-gray-800">학생 대시보드</h1>
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                    >
+                        로그아웃
+                    </button>
+                    <span> </span>
+                    <button
+                        onClick={() => navigate('/change-password')}
+                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                    >
+                        비밀번호 변경
+                    </button>
+                    <span> </span>
+                    <button
+                        onClick={() => navigate('/pixar')}
+                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                    >
+                        사진 찍기
+                    </button>
+                    {loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312' ? (
+                        <>
+                            <span> </span>
+                            <button
+                                onClick={() => navigate('/phrasejae')}
+                                className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                            >
+                                Top Secret
+                            </button>
+                        </>
+                    ) : null}
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 한 마디</h2>
+                    <p>{loggedInUserData.phrase || 'N/A'}</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h2 className="text-xl font-semibold mb-3 text-gray-700">식권 QR 코드</h2>
+                    {loggedInUserData.dinnerApplied && loggedInUserData.dinnerApproved && loggedInUserData.dinnerUsed === false ? (
+                        <>
+                            <button
+                                onClick={handleGenerateClick}
+                                disabled={!isQrLibLoaded || generatedQrDataString}
+                                className={`w-full py-2 rounded ${!isQrLibLoaded || generatedQrDataString
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
+                            >
+                                {generatedQrDataString ? 'QR 코드 생성됨 (스캔 대기)' : 'QR 코드 생성'}
+                            </button>
+                            <div
+                                ref={qrCodeRef}
+                                className="h-52 flex items-center justify-center border rounded bg-gray-50 mt-4"
+                            >
+                                {!generatedQrDataString && 'QR 코드 생성 버튼을 눌러주세요.'}
+                            </div>
+                        </>
+                    ) : (
+                        <p className="text-red-600 text-center">
+                            {!loggedInUserData.dinnerApplied
+                                ? '석식을 신청하지 않았습니다.'
+                                : !loggedInUserData.dinnerApproved
+                                    ? '석식이 승인되지 않았습니다.'
+                                    : loggedInUserData.dinnerUsed === true
+                                        ? '오늘 식권이 이미 사용되었습니다.'
+                                        : 'QR 코드 표시 조건을 만족하지 않습니다.'}
+                        </p>
+                    )}
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 석식 메뉴</h2>
+                    {menuError ? (
+                        <p className="text-red-600 text-center">{menuError}</p>
+                    ) : dinnerMenu ? (
+                        dinnerMenu.map((item, index) => (
+                            <p key={index} className="text-center">{item}</p>
+                        ))
+                    ) : isLoadingMenu ? (
+                        <p className="text-center text-gray-500">석식 메뉴를 불러오는 중...</p>
+                    ) : (
+                        <p className="text-center text-gray-500">석식 메뉴 데이터가 없습니다.</p>
+                    )}
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h2 className="text-xl font-semibold mb-3 text-gray-700">내 정보</h2>
+                    <p>이름: {loggedInUserData.name || 'N/A'}</p>
+                    <p>학년/반: {loggedInUserData.grade || '?'}학년 {loggedInUserData.classNum || '?'}반</p>
+                    <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
+                </div>
+                <div className="footer">
+
+                    <p>
+                        <a
+                            href="https://www.instagram.com/tnsbro_"
+                            className="footer-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
                         >
-                            Top Secret
-                        </button>
-                    </>
-                ) : null}
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 한 마디</h2>
-                <p>{loggedInUserData.phrase || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-xl font-semibold mb-3 text-gray-700">식권 QR 코드</h2>
-                {loggedInUserData.dinnerApplied && loggedInUserData.dinnerApproved && loggedInUserData.dinnerUsed === false ? (
-                    <>
-                        <button
-                            onClick={handleGenerateClick}
-                            disabled={!isQrLibLoaded || generatedQrDataString}
-                            className={`w-full py-2 rounded ${!isQrLibLoaded || generatedQrDataString
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                }`}
-                        >
-                            {generatedQrDataString ? 'QR 코드 생성됨 (스캔 대기)' : 'QR 코드 생성'}
-                        </button>
-                        <div
-                            ref={qrCodeRef}
-                            className="h-52 flex items-center justify-center border rounded bg-gray-50 mt-4"
-                        >
-                            {!generatedQrDataString && 'QR 코드 생성 버튼을 눌러주세요.'}
-                        </div>
-                    </>
-                ) : (
-                    <p className="text-red-600 text-center">
-                        {!loggedInUserData.dinnerApplied
-                            ? '석식을 신청하지 않았습니다.'
-                            : !loggedInUserData.dinnerApproved
-                                ? '석식이 승인되지 않았습니다.'
-                                : loggedInUserData.dinnerUsed === true
-                                    ? '오늘 식권이 이미 사용되었습니다.'
-                                    : 'QR 코드 표시 조건을 만족하지 않습니다.'}
+                            박순형
+                        </a>{' '}
+                        💛{' '}
                     </p>
-                )}
+
+                    <p>
+                        <a
+                            href="https://www.instagram.com/isqepe"
+                            className="footer-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            정재윤
+                        </a>{' '}
+                        💛{' '}
+                    </p>
+                </div>
+
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-xl font-semibold mb-3 text-gray-700">오늘의 석식 메뉴</h2>
-                {menuError ? (
-                    <p className="text-red-600 text-center">{menuError}</p>
-                ) : dinnerMenu ? (
-                    dinnerMenu.map((item, index) => (
-                        <p key={index} className="text-center">{item}</p>
-                    ))
-                ) : isLoadingMenu ? (
-                    <p className="text-center text-gray-500">석식 메뉴를 불러오는 중...</p>
-                ) : (
-                    <p className="text-center text-gray-500">석식 메뉴 데이터가 없습니다.</p>
-                )}
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-xl font-semibold mb-3 text-gray-700">내 정보</h2>
-                <p>이름: {loggedInUserData.name || 'N/A'}</p>
-                <p>학년/반: {loggedInUserData.grade || '?'}학년 {loggedInUserData.classNum || '?'}반</p>
-                <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
-            </div>
-            <div className="footer">
-            
-              <p>
-                <a
-                  href="https://www.instagram.com/tnsbro_"
-                  className="footer-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  박순형
-                </a>{' '}
-                💛{' '}
-              </p>
-               
-              <p>
-                <a
-                  href="https://www.instagram.com/isqepe"
-                  className="footer-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  정재윤
-                </a>{' '}
-                💛{' '}
-              </p>
-            </div>
-            
-    </div>
-    );
+            );
 }
 
-export default StudentDashboard;
+            export default StudentDashboard;
