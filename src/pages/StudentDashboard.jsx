@@ -379,9 +379,9 @@ function StudentDashboard() {
                 <p>학년/반: {loggedInUserData.grade || '?'}학년 {loggedInUserData.classNum || '?'}반</p>
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
             </div>
-             <div className="footer">
+            <div className="footer">
+            
               <p>
-                Powered by{' '}
                 <a
                   href="https://www.instagram.com/tnsbro_"
                   className="footer-link"
@@ -391,15 +391,50 @@ function StudentDashboard() {
                   박순형
                 </a>{' '}
                 💛{' '}
+              </p>
+            
+              <p>
                 <a
                   href="https://www.instagram.com/isqepe"
                   className="footer-link"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  정재윤
-                </a>
+                  ?
+                </a>{' '}
+                💛{' '}
               </p>
+
+                <br>
+                
+                </br>
+                
+                
+
+                 <p>
+                <a
+                  href="https://www.instagram.com/tnsbro_"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  박순형
+                </a>{' '}
+                💛{' '}
+              </p>
+            
+              <p>
+                <a
+                  href="https://www.instagram.com/isqepe"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ?
+                </a>{' '}
+                💛{' '}
+              </p>
+            
            
         </div>
     );
