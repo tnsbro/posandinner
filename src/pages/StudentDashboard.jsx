@@ -392,7 +392,14 @@ function StudentDashboard() {
                     >
                         박순형
                     </a>{' '}
-                    💛{' '}?
+                    ❤️{' '}{' '} <a
+                        href="https://www.instagram.com/ye"
+                        className="footer-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        ?
+                    </a>
                 </p>
                 <p>
                     <a
@@ -403,7 +410,14 @@ function StudentDashboard() {
                     >
                         정재윤
                     </a>{' '}
-                    💛{' '}?
+                    ❤️{' '}{' '} <a
+                        href="https://www.instagram.com/ye"
+                        className="footer-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        ?
+                    </a>
                 </p>
 
 
