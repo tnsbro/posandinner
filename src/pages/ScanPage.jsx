@@ -396,6 +396,7 @@ function ScanPage() {
               </p>
             
     </div>
+    </div>
   );
 }
 
