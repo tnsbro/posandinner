@@ -371,7 +371,6 @@ function ScanPage() {
       </div>
       <div className="footer">
               <p>
-                Powered by{' '}
                 <a
                   href="https://www.instagram.com/tnsbro_"
                   className="footer-link"
@@ -381,6 +380,8 @@ function ScanPage() {
                   박순형
                 </a>{' '}
                 💛{' '}
+                <br>
+                <br>
                 <a
                   href="https://www.instagram.com/isqepe"
                   className="footer-link"
@@ -388,7 +389,8 @@ function ScanPage() {
                   rel="noopener noreferrer"
                 >
                   정재윤
-                </a>
+                </a>{' '}
+                💛{' '}
               </p>
             </div>
     </div>
