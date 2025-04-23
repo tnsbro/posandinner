@@ -380,7 +380,7 @@ function StudentDashboard() {
                 <p>석식 신청: {loggedInUserData.dinnerApplied ? '신청함' : '신청 안 함'}</p>
             </div>
             <div className="footer">
-            
+            <div>
               <p>
                 <a
                   href="https://www.instagram.com/tnsbro_"
@@ -405,9 +405,9 @@ function StudentDashboard() {
                 💛{' '}
               </p>
 
+                </div>
                 
-                
-                
+                <div>
 
                  <p>
                 <a
@@ -433,7 +433,7 @@ function StudentDashboard() {
                 💛{' '}
               </p>
             
-           
+           </div>
         </div>
     );
 }
