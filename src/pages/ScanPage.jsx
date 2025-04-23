@@ -370,7 +370,7 @@ function ScanPage() {
         </div>
       </div>
       <div className="footer">
-            <div>
+            
               <p>
                 <a
                   href="https://www.instagram.com/tnsbro_"
@@ -394,7 +394,7 @@ function ScanPage() {
                 </a>{' '}
                 💛{' '}
               </p>
-            </div>
+            
     </div>
   );
 }
