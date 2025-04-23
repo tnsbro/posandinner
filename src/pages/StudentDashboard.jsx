@@ -400,7 +400,7 @@ function StudentDashboard() {
                   정재윤
                 </a>
               </p>
-            </div>
+           
         </div>
     );
 }
