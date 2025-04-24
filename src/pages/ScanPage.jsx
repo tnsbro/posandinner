@@ -1,3 +1,4 @@
+```jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -15,13 +16,12 @@ function ScanPage() {
   const [isLibraryLoaded, setIsLibraryLoaded] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const schRef = useRef(''); // sch 상태를 useRef로 변경
+  const schRef = useRef(''); // sch 상태를 useRef로 유지
   const html5QrCodeScannerRef = useRef(null);
   const qrReaderId = 'qr-reader-teacher';
   const cleanupRef = useRef(false);
 
   useDataExist(); // 사용자 데이터 존재 여부 확인
-  // 디버그 모드 확인 (?debug=true URL 파라미터)
   const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
 
   // KST 날짜 문자열 반환
@@ -39,9 +39,7 @@ function ScanPage() {
       setScanError('');
 
       try {
-        // 동일한 이메일인지 확인
         if (qrData.email !== schRef.current) {
-
           const usersRef = collection(db, 'users');
           const q = query(usersRef, where('email', '==', qrData.email));
           const querySnapshot = await getDocs(q);
@@ -54,7 +52,6 @@ function ScanPage() {
           const userDoc = querySnapshot.docs[0];
           const userData = userDoc.data();
           const userDocRef = doc(db, 'users', userDoc.id);
-
 
           if (!userData.dinnerApplied) {
             setScanError(`오류: ${qrData.name}(${qrData.classInfo}) 학생은 석식을 신청하지 않았습니다.`);
@@ -69,7 +66,6 @@ function ScanPage() {
             return false;
           }
 
-          // Firestore에 사용 기록 업데이트
           await updateDoc(userDocRef, {
             dinnerUsed: true,
             lastUsedDate: todayDate,
@@ -85,19 +81,8 @@ function ScanPage() {
         return false;
       }
     },
-    [todayDate] // 의존성 배열에 schRef는 필요 없음
+    [todayDate]
   );
-
-  // 1초 동안 스캔 일시 중지
-  const pauseAfterScan = useCallback(() => {
-    return new Promise((resolve) => {
-      setIsProcessing(true);
-      setTimeout(() => {
-        setIsProcessing(false);
-        resolve();
-      }, 1000); // 1초 대기
-    });
-  }, []);
 
   // 스캐너 중지
   const stopScanner = useCallback(async () => {
@@ -132,7 +117,11 @@ function ScanPage() {
   // 스캔 성공 처리
   const onScanSuccess = useCallback(
     async (decodedText) => {
-      if (isProcessing || cleanupRef.current) return;
+      if (isProcessing || cleanupRef.current) {
+        console.log('Scan ignored: Scanner is processing or cleaning up.');
+        return;
+      }
+      console.log(`스캔 성공: ${decodedText} at ${new Date().toISOString()}`);
       setIsProcessing(true);
       setScanResult('');
       setScanError('');
@@ -148,13 +137,13 @@ function ScanPage() {
         const qrData = JSON.parse(decodedText);
         if (!qrData.email || !qrData.name || !qrData.classInfo || !qrData.date || !qrData.nonce) {
           setScanError('오류: 유효하지 않은 QR 코드 형식입니다.');
-          await pauseAfterScan();
+          setIsProcessing(false);
           return;
         }
 
         if (qrData.date !== todayDate) {
           setScanError(`오류: 이 QR 코드는 오늘(${todayDate}) 날짜가 아닙니다.`);
-          await pauseAfterScan();
+          setIsProcessing(false);
           return;
         }
 
@@ -162,27 +151,29 @@ function ScanPage() {
         if (saveSuccess) {
           setScanResult(`✅ 인증 완료: ${qrData.classInfo} ${qrData.name}`);
         }
-        await pauseAfterScan();
+        setIsProcessing(false);
       } catch (e) {
         console.warn('QR 처리 오류:', e);
         setScanError(`오류: QR 코드 처리 실패 (${e.message})`);
-        await pauseAfterScan();
+        setIsProcessing(false);
       }
     },
-    [isProcessing, todayDate, getTodayKSTString, stopScanner, verifyAndMarkUsage, pauseAfterScan]
+    [isProcessing, todayDate, getTodayKSTString, stopScanner, verifyAndMarkUsage]
   );
 
   // 스캔 실패 처리
-  const onScanFailure = useCallback((error) => {
-    // 디버그 모드에서만 유의미한 오류 로그 출력
-    if (isDebug && !error.message.includes('No QR code found')) {
-      console.debug('QR 인식 오류:', error);
-    }
-  }, [isDebug]);
+  const onScanFailure = useCallback(
+    (error) => {
+      if (isDebug && !error.message.includes('No QR code found')) {
+        console.debug('QR 인식 오류:', error);
+      }
+    },
+    [isDebug]
+  );
 
-  // 스캐너 시작 (재시도 및 대체 카메라 포함)
+  // 스캐너 시작
   const startScanner = useCallback(
-    async (attempt = 1, maxAttempts = 3, cameraConstraints = { facingMode: 'user' }) => {
+    async (attempt = 1, maxAttempts = 3, cameraConstraints = { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }) => {
       if (cleanupRef.current || !isLibraryLoaded || isProcessing) return;
 
       const container = document.getElementById(qrReaderId);
@@ -207,18 +198,24 @@ function ScanPage() {
 
         html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: isDebug });
         const config = {
-          fps: 15,
+          fps: 25, // 빠른 인식
           qrbox: (w, h) => ({
-            width: Math.max(Math.min(w, h) * 0.75, 200),
-            height: Math.max(Math.min(w, h) * 0.75, 200),
+            width: Math.min(w, h) * 0.9, // 넓은 스캔 영역
+            height: Math.min(w, h) * 0.9,
           }),
           aspectRatio: 1.0,
+          disableFlip: true, // 디코딩 속도 향상
           showTorchButtonIfSupported: true,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true, // 네이티브 바코드 감지
+          },
+          rememberLastUsedCamera: true, // 전면 카메라 지속
+          formatsToSupport: [window.Html5QrcodeSupportedFormats.QR_CODE], // QR 코드 전용
         };
 
+        console.log(`Attempting to start scanner (Attempt ${attempt}/${maxAttempts}) with constraints:`, cameraConstraints);
         await html5QrCodeScannerRef.current.start(cameraConstraints, config, onScanSuccess, onScanFailure);
 
-        // 비디오 스트림 렌더링 확인
         const videoElement = container.querySelector('video');
         if (!videoElement) {
           throw new Error('비디오 스트림이 DOM에 렌더링되지 않음');
@@ -226,15 +223,13 @@ function ScanPage() {
 
         setIsScanning(true);
         setIsInitializing(false);
+        console.log('Scanner started successfully');
       } catch (err) {
         console.error(`스캐너 시작 오류 (시도 ${attempt}):`, err);
         if (attempt < maxAttempts && err.name === 'AbortError' && err.message.includes('Timeout starting video source')) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log(`Retrying scanner start (Attempt ${attempt + 1})...`);
+          await new Promise((resolve) => setTimeout(resolve, 500));
           return startScanner(attempt + 1, maxAttempts, cameraConstraints);
-        } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'user') {
-          return startScanner(1, maxAttempts, { facingMode: 'environment' });
-        } else if (attempt === maxAttempts && cameraConstraints.facingMode === 'environment') {
-          return startScanner(1, maxAttempts, {});
         }
 
         let errorMessage = `카메라 시작 오류: ${err.message || err}. `;
@@ -265,6 +260,7 @@ function ScanPage() {
       script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
       script.async = true;
       script.onload = () => {
+        console.log('Html5Qrcode library loaded');
         setIsLibraryLoaded(true);
       };
       script.onerror = () => {
@@ -273,6 +269,7 @@ function ScanPage() {
       };
       document.head.appendChild(script);
     } else if (typeof window.Html5Qrcode !== 'undefined') {
+      console.log('Html5Qrcode library already loaded');
       setIsLibraryLoaded(true);
     }
 
@@ -282,14 +279,15 @@ function ScanPage() {
       const container = document.getElementById(qrReaderId);
       if (container) container.innerHTML = '';
     };
-  }, [stopScanner]);
+  }, [stopScanner, getTodayKSTString]);
 
   // 교사용 자동 스캐너 시작
   useEffect(() => {
-    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing) {
+    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing && !isProcessing) {
+      console.log('Attempting to auto-start scanner');
       startScanner();
     }
-  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing]);
+  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing, isProcessing]);
 
   // 날짜 변경 감지
   useEffect(() => {
@@ -327,7 +325,7 @@ function ScanPage() {
   return (
     <div className="container mx-auto p-4 max-w-lg">
       <div className="flex justify-between items-center mb-4">
-        <h1 Braun className="text-2xl font-bold text-gray-800">식권 QR 스캐너 (교사용)</h1>
+        <h1 className="text-2xl font-bold text-gray-800">식권 QR 스캐너 (교사용)</h1>
         <button
           onClick={handleLogout}
           className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-1 px-3 rounded"
@@ -341,9 +339,18 @@ function ScanPage() {
         <h2 className="text-xl font-semibold mb-3 text-gray-700">QR 코드 스캔</h2>
         <div
           id={qrReaderId}
-          className="w-full mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
+          className="w-full mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden relative"
           style={{ maxWidth: '500px', minHeight: '250px' }}
-        />
+        >
+          {isScanning && !isProcessing && (
+            <div className="absolute inset-0 border-4 border-green-500 opacity-50 pointer-events-none" />
+          )}
+          {isProcessing && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-semibold">
+              처리 중...
+            </div>
+          )}
+        </div>
         {!isLibraryLoaded && <p className="text-center text-gray-500 mt-4">스캐너 라이브러리 로딩 중...</p>}
         {isLibraryLoaded && !isScanning && isInitializing && (
           <p className="text-center text-gray-500 mt-4">카메라 초기화 중...</p>
@@ -370,34 +377,32 @@ function ScanPage() {
         </div>
       </div>
       <div className="footer">
-            
-              <p>
-                <a
-                  href="https://www.instagram.com/tnsbro_"
-                  className="footer-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  박순형
-                </a>{' '}
-                💛{' '}
-              </p>
-               
-              <p>
-                <a
-                  href="https://www.instagram.com/isqepe"
-                  className="footer-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  정재윤
-                </a>{' '}
-                💛{' '}
-              </p>
-            
-    </div>
+        <p>
+          <a
+            href="https://www.instagram.com/tnsbro_"
+            className="footer-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            박순형
+          </a>{' '}
+          💛{' '}
+        </p>
+        <p>
+          <a
+            href="https://www.instagram.com/isqepe"
+            className="footer-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            정재윤
+          </a>{' '}
+          💛{' '}
+        </p>
+      </div>
     </div>
   );
 }
 
 export default ScanPage;
+```
