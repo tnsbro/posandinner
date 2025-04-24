@@ -1,4 +1,4 @@
-```jsx
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -405,4 +405,3 @@ function ScanPage() {
 }
 
 export default ScanPage;
-```
