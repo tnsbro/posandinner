@@ -171,7 +171,7 @@ function ScanPage() {
 
   // 스캐너 시작
   const startScanner = useCallback(
-    async (attempt = 1, maxAttempts = 5) => {
+    async (attempt = 1, maxAttempts = 8) => {
       if (cleanupRef.current || !isLibraryLoaded) {
         console.log('스캐너 시작 차단: cleanupRef.current 또는 라이브러리 미로드');
         return;
@@ -202,12 +202,20 @@ function ScanPage() {
         console.log(`스캐너 초기화 시작 (시도 ${attempt}/${maxAttempts})`);
         html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: isDebug });
 
-        // 전면 카메라 ID 동적 조회
-        const cameras = await window.Html5Qrcode.getCameras();
-        console.log('사용 가능한 카메라:', cameras);
+        // 카메라 목록 조회
+        let cameras;
+        try {
+          cameras = await window.Html5Qrcode.getCameras();
+          console.log('사용 가능한 카메라:', cameras);
+        } catch (err) {
+          console.error('카메라 목록 조회 실패:', err);
+          throw new Error('카메라를 찾을 수 없습니다.');
+        }
+
+        // 전면 카메라 선택
         const frontCamera = cameras.find(
           (cam) => cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
-        ) || cameras[0]; // 전면 카메라가 없으면 첫 번째 카메라 사용
+        ) || cameras[0]; // 전면 카메라 없으면 첫 번째 카메라
 
         if (!frontCamera) {
           throw new Error('카메라를 찾을 수 없습니다.');
@@ -244,9 +252,9 @@ function ScanPage() {
         console.log('스캐너 성공적으로 시작됨');
       } catch (err) {
         console.error(`스캐너 시작 오류 (시도 ${attempt}):`, err);
-        if (attempt < maxAttempts && (err.name === 'AbortError' || (err.message && err.message.includes('Video stream not rendered')))) {
+        if (attempt < maxAttempts && (err.name === 'AbortError' || (err.message && err.message.includes('Timeout starting video source')) || (err.message && err.message.includes('Video stream not rendered')))) {
           console.log(`재시도 (시도 ${attempt + 1}/${maxAttempts})...`);
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // 지연 시간 증가
           return startScanner(attempt + 1, maxAttempts);
         }
 
@@ -257,8 +265,8 @@ function ScanPage() {
           errorMessage = '전면 카메라를 찾을 수 없습니다. 디바이스에 카메라가 있는지 확인하거나 브라우저를 새로고침하세요.';
         } else if (err.name === 'NotReadableError') {
           errorMessage = '카메라 사용 불가. 다른 앱이 카메라를 사용 중일 수 있습니다.';
-        } else if (err.name === 'AbortError') {
-          errorMessage = '카메라 초기화 시간이 초과되었습니다. 새로고침하거나 다른 브라우저를 시도하세요.';
+        } else if (err.name === 'AbortError' || (err.message && err.message.includes('Timeout starting video source'))) {
+          errorMessage = '카메라 초기화 시간이 초과되었습니다. 브라우저를 새로고침하거나 디바이스를 재시작하세요.';
         } else if (err.message && err.message.includes('Video stream not rendered')) {
           errorMessage = '카메라 스트림을 렌더링할 수 없습니다. 브라우저를 새로고침하거나 디바이스를 재시작하세요.';
         } else {
@@ -284,7 +292,7 @@ function ScanPage() {
     if (!document.getElementById(scriptId)) {
       const script = document.createElement('script');
       script.id = scriptId;
-      script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      script.src = 'https://unpkg.com/html5-qrcode@latest/html5-qrcode.min.js'; // 최신 버전 사용
       script.async = true;
       script.onload = () => {
         console.log('Html5Qrcode 라이브러리 로드 완료');
@@ -394,6 +402,18 @@ function ScanPage() {
           {scanError && (
             <div className="p-3 rounded bg-red-100 text-red-800 font-semibold break-words">
               {scanError}
+              {scanError.includes('카메라 권한') && (
+                <p className="mt-2 text-sm">
+                  <a
+                    href="https://support.google.com/chrome/answer/2693767"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    카메라 권한 설정 방법
+                  </a>
+                </p>
+              )}
             </div>
           )}
           {!scanResult && !scanError && isScanning && !isProcessing && (
