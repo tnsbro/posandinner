@@ -77,7 +77,7 @@ function ScanPage() {
         }
       } catch (error) {
         console.error('Firestore 오류:', error);
-        setScanError(`오류: 사용 처리 실패 (${error.message})`);
+        setScanError(`오류: 사용 처리 실패 (${error.message || error})`);
         return false;
       }
     },
@@ -97,10 +97,8 @@ function ScanPage() {
           console.log('스캐너 성공적으로 중지됨');
         }
       } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error('스캐너 중지 오류:', err);
-          setScanError(`스캐너 중지 오류: ${err.message}`);
-        }
+        console.error('스캐너 중지 오류:', err);
+        setScanError(`스캐너 중지 오류: ${err.message || err}`);
       } finally {
         html5QrCodeScannerRef.current = null;
         setIsScanning(false);
@@ -154,7 +152,7 @@ function ScanPage() {
         setIsProcessing(false);
       } catch (e) {
         console.warn('QR 처리 오류:', e);
-        setScanError(`오류: QR 코드 처리 실패 (${e.message})`);
+        setScanError(`오류: QR 코드 처리 실패 (${e.message || e})`);
         setIsProcessing(false);
       }
     },
@@ -164,7 +162,7 @@ function ScanPage() {
   // 스캔 실패 처리
   const onScanFailure = useCallback(
     (error) => {
-      if (isDebug && !error.message.includes('No QR code found')) {
+      if (isDebug && error && !error.message?.includes('No QR code found')) {
         console.debug('QR 인식 오류:', error);
       }
     },
@@ -173,13 +171,17 @@ function ScanPage() {
 
   // 스캐너 시작
   const startScanner = useCallback(
-    async (attempt = 1, maxAttempts = 3, cameraConstraints = { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }) => {
-      if (cleanupRef.current || !isLibraryLoaded || isProcessing) return;
+    async (attempt = 1, maxAttempts = 5) => {
+      if (cleanupRef.current || !isLibraryLoaded) {
+        console.log('스캐너 시작 차단: cleanupRef.current 또는 라이브러리 미로드');
+        return;
+      }
 
       const container = document.getElementById(qrReaderId);
       if (!container) {
         setScanError('오류: QR 스캐너 UI 영역을 찾을 수 없습니다.');
         setIsInitializing(false);
+        console.error('컨테이너 없음: #qr-reader-teacher');
         return;
       }
 
@@ -192,11 +194,25 @@ function ScanPage() {
           const state = await html5QrCodeScannerRef.current.getState();
           if (state === 2) {
             setIsInitializing(false);
+            console.log('스캐너 이미 실행 중');
             return;
           }
         }
 
+        console.log(`스캐너 초기화 시작 (시도 ${attempt}/${maxAttempts})`);
         html5QrCodeScannerRef.current = new window.Html5Qrcode(qrReaderId, { verbose: isDebug });
+
+        // 전면 카메라 ID 동적 조회
+        const cameras = await window.Html5Qrcode.getCameras();
+        console.log('사용 가능한 카메라:', cameras);
+        const frontCamera = cameras.find(
+          (cam) => cam.label.toLowerCase().includes('front') || cam.label.toLowerCase().includes('user')
+        ) || cameras[0]; // 전면 카메라가 없으면 첫 번째 카메라 사용
+
+        if (!frontCamera) {
+          throw new Error('카메라를 찾을 수 없습니다.');
+        }
+
         const config = {
           fps: 25, // 빠른 인식
           qrbox: (w, h) => ({
@@ -213,38 +229,49 @@ function ScanPage() {
           formatsToSupport: [window.Html5QrcodeSupportedFormats.QR_CODE], // QR 코드 전용
         };
 
-        console.log(`Attempting to start scanner (Attempt ${attempt}/${maxAttempts}) with constraints:`, cameraConstraints);
-        await html5QrCodeScannerRef.current.start(cameraConstraints, config, onScanSuccess, onScanFailure);
+        console.log('카메라 시작 요청: 전면 카메라 ID', frontCamera.id);
+        await html5QrCodeScannerRef.current.start(frontCamera.id, config, onScanSuccess, onScanFailure);
 
+        // 비디오 요소 확인
         const videoElement = container.querySelector('video');
         if (!videoElement) {
+          console.warn('비디오 요소 미렌더링');
           throw new Error('비디오 스트림이 DOM에 렌더링되지 않음');
         }
 
         setIsScanning(true);
         setIsInitializing(false);
-        console.log('Scanner started successfully');
+        console.log('스캐너 성공적으로 시작됨');
       } catch (err) {
         console.error(`스캐너 시작 오류 (시도 ${attempt}):`, err);
-        if (attempt < maxAttempts && err.name === 'AbortError' && err.message.includes('Timeout starting video source')) {
-          console.log(`Retrying scanner start (Attempt ${attempt + 1})...`);
+        if (attempt < maxAttempts && (err.name === 'AbortError' || (err.message && err.message.includes('Video stream not rendered')))) {
+          console.log(`재시도 (시도 ${attempt + 1}/${maxAttempts})...`);
           await new Promise((resolve) => setTimeout(resolve, 500));
-          return startScanner(attempt + 1, maxAttempts, cameraConstraints);
+          return startScanner(attempt + 1, maxAttempts);
         }
 
         let errorMessage = `카메라 시작 오류: ${err.message || err}. `;
-        if (err.name === 'NotAllowedError') errorMessage += '카메라 권한이 필요합니다. 브라우저 설정에서 권한을 허용하세요.';
-        else if (err.name === 'NotFoundError') errorMessage += '카메라를 찾을 수 없습니다. 디바이스에 카메라가 있는지 확인하세요.';
-        else if (err.name === 'NotReadableError') errorMessage += '카메라 사용 불가. 다른 앱이 사용 중일 수 있습니다.';
-        else if (err.name === 'AbortError') errorMessage += '카메라 초기화 시간이 초과되었습니다. 새로고침하거나 다른 카메라를 시도하세요.';
-        else if (err.message.includes('Video stream not rendered')) errorMessage += '카메라 스트림을 렌더링할 수 없습니다. 브라우저를 새로고침하세요.';
+        if (err.name === 'NotAllowedError') {
+          errorMessage = '카메라 권한이 필요합니다. 브라우저 설정에서 카메라 권한을 허용한 후 새로고침하세요.';
+        } else if (err.name === 'NotFoundError' || err.message === '카메라를 찾을 수 없습니다.') {
+          errorMessage = '전면 카메라를 찾을 수 없습니다. 디바이스에 카메라가 있는지 확인하거나 브라우저를 새로고침하세요.';
+        } else if (err.name === 'NotReadableError') {
+          errorMessage = '카메라 사용 불가. 다른 앱이 카메라를 사용 중일 수 있습니다.';
+        } else if (err.name === 'AbortError') {
+          errorMessage = '카메라 초기화 시간이 초과되었습니다. 새로고침하거나 다른 브라우저를 시도하세요.';
+        } else if (err.message && err.message.includes('Video stream not rendered')) {
+          errorMessage = '카메라 스트림을 렌더링할 수 없습니다. 브라우저를 새로고침하거나 디바이스를 재시작하세요.';
+        } else {
+          errorMessage = `알 수 없는 오류: ${err.message || err}. 브라우저를 새로고침하세요.`;
+        }
         setScanError(errorMessage);
         setIsScanning(false);
         setIsInitializing(false);
         html5QrCodeScannerRef.current = null;
+        console.error('최종 초기화 실패:', errorMessage);
       }
     },
-    [isLibraryLoaded, isProcessing, onScanSuccess, onScanFailure, isDebug]
+    [isLibraryLoaded, onScanSuccess, onScanFailure, isDebug]
   );
 
   // 라이브러리 로드 및 정리
@@ -260,7 +287,7 @@ function ScanPage() {
       script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
       script.async = true;
       script.onload = () => {
-        console.log('Html5Qrcode library loaded');
+        console.log('Html5Qrcode 라이브러리 로드 완료');
         setIsLibraryLoaded(true);
       };
       script.onerror = () => {
@@ -269,7 +296,7 @@ function ScanPage() {
       };
       document.head.appendChild(script);
     } else if (typeof window.Html5Qrcode !== 'undefined') {
-      console.log('Html5Qrcode library already loaded');
+      console.log('Html5Qrcode 라이브러리 이미 로드됨');
       setIsLibraryLoaded(true);
     }
 
@@ -283,11 +310,11 @@ function ScanPage() {
 
   // 교사용 자동 스캐너 시작
   useEffect(() => {
-    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing && !isProcessing) {
-      console.log('Attempting to auto-start scanner');
+    if (isLibraryLoaded && loggedInUserData?.role === 'teacher' && !isScanning && !isInitializing) {
+      console.log('스캐너 자동 시작 시도');
       startScanner();
     }
-  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing, isProcessing]);
+  }, [isLibraryLoaded, loggedInUserData, startScanner, isScanning, isInitializing]);
 
   // 날짜 변경 감지
   useEffect(() => {
