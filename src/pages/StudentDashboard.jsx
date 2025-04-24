@@ -405,8 +405,13 @@ function StudentDashboard() {
                         정재윤
                     </a>{' '}
                     ❤️{' '}{' '}
-                        {' '}<a
-                        href="https://www.instagram.com/blonded">?</a> 
+                        {' '}
+                    <a
+                        href="https://www.instagram.com/blonded"
+                        className="footer-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                                 >?</a> 
                 </p>
 
 
