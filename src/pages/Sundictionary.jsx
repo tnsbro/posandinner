@@ -3,12 +3,12 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase
 import { db } from "../firebaseConfig";
 import "../sch.css";
 
-const Sundictionary = () => {
+const Sundictionary = ({ currentUser }) => {
   const [words, setWords] = useState([]); // 단어 목록
   const [newWord, setNewWord] = useState(""); // 새 단어 입력
   const [newMeaning, setNewMeaning] = useState(""); // 새 뜻 입력
   const [searchTerm, setSearchTerm] = useState(""); // 검색어
-  const [selectedWord, setSelectedWord] = useState(null); // 선택된 단어
+  const [expandedWordId, setExpandedWordId] = useState(null); // 클릭된 단어 ID
   const [newComment, setNewComment] = useState(""); // 새 댓글 입력
   const wordsCollection = collection(db, "words"); // Firestore 컬렉션 참조
 
@@ -21,17 +21,47 @@ const Sundictionary = () => {
   // Firestore에 단어 추가
   const handleAddWord = async () => {
     if (!newWord.trim() || !newMeaning.trim()) return;
-    await addDoc(wordsCollection, { word: newWord.trim(), meaning: newMeaning.trim(), comments: [] });
+    await addDoc(wordsCollection, {
+      word: newWord.trim(),
+      meaning: newMeaning.trim(),
+      comments: [],
+    });
     setNewWord("");
     setNewMeaning("");
     fetchWords();
   };
 
-  // Firestore에서 단어 수정
-  const handleEditWord = async (id, updatedWord, updatedMeaning) => {
-    const wordDoc = doc(db, "words", id);
-    await updateDoc(wordDoc, { word: updatedWord, meaning: updatedMeaning });
-    setSelectedWord(null);
+  // Firestore에서 댓글 추가
+  const handleAddComment = async (wordId) => {
+    if (!newComment.trim()) return;
+    const wordDoc = doc(db, "words", wordId);
+    const targetWord = words.find((word) => word.id === wordId);
+    const updatedComments = [
+      ...(targetWord.comments || []),
+      { text: newComment, user: currentUser, id: Date.now().toString() },
+    ];
+    await updateDoc(wordDoc, { comments: updatedComments });
+    setNewComment("");
+    fetchWords();
+  };
+
+  // Firestore에서 댓글 수정
+  const handleEditComment = async (wordId, commentId, newText) => {
+    const wordDoc = doc(db, "words", wordId);
+    const targetWord = words.find((word) => word.id === wordId);
+    const updatedComments = targetWord.comments.map((comment) =>
+      comment.id === commentId ? { ...comment, text: newText } : comment
+    );
+    await updateDoc(wordDoc, { comments: updatedComments });
+    fetchWords();
+  };
+
+  // Firestore에서 댓글 삭제
+  const handleDeleteComment = async (wordId, commentId) => {
+    const wordDoc = doc(db, "words", wordId);
+    const targetWord = words.find((word) => word.id === wordId);
+    const updatedComments = targetWord.comments.filter((comment) => comment.id !== commentId);
+    await updateDoc(wordDoc, { comments: updatedComments });
     fetchWords();
   };
 
@@ -39,22 +69,7 @@ const Sundictionary = () => {
   const handleDeleteWord = async (id) => {
     const wordDoc = doc(db, "words", id);
     await deleteDoc(wordDoc);
-    setSelectedWord(null);
     fetchWords();
-  };
-
-  // Firestore에 댓글 추가
-  const handleAddComment = async () => {
-    if (!newComment.trim() || !selectedWord) return;
-    const wordDoc = doc(db, "words", selectedWord.id);
-    const updatedComments = [...(selectedWord.comments || []), newComment];
-    await updateDoc(wordDoc, { comments: updatedComments }); // Firestore에 댓글 업데이트
-    setNewComment(""); // 댓글 입력 필드 초기화
-    setSelectedWord((prev) => ({
-      ...prev,
-      comments: updatedComments, // UI 즉시 업데이트
-    }));
-    fetchWords(); // Firestore 데이터 갱신
   };
 
   // 검색 필터
@@ -106,67 +121,65 @@ const Sundictionary = () => {
       {/* 단어 목록 */}
       <div className="word-list">
         {filteredWords.map((item) => (
-          <div
-            key={item.id}
-            className={`word-item card ${selectedWord?.id === item.id ? "selected" : ""}`}
-            onClick={() => setSelectedWord(item)}
-          >
-            <strong>{item.word}</strong>: {item.meaning}
+          <div key={item.id} className="word-item card">
+            <div onClick={() => setExpandedWordId(item.id === expandedWordId ? null : item.id)}>
+              <strong>{item.word}</strong>
+            </div>
+            {expandedWordId === item.id && (
+              <div className="word-detail">
+                <p>{item.meaning}</p>
+
+                {/* 댓글 섹션 */}
+                <div className="comments-section">
+                  <h3>댓글</h3>
+                  {item.comments?.length > 0 ? (
+                    item.comments.map((comment) => (
+                      <div key={comment.id} className="comment-item">
+                        <p>
+                          <strong>{comment.user}</strong>: {comment.text}
+                        </p>
+                        {comment.user === currentUser && (
+                          <div className="comment-actions">
+                            <button
+                              className="edit-button"
+                              onClick={() => {
+                                const newText = prompt("댓글 수정:", comment.text);
+                                if (newText) handleEditComment(item.id, comment.id, newText);
+                              }}
+                            >
+                              수정
+                            </button>
+                            <button
+                              className="delete-button"
+                              onClick={() => handleDeleteComment(item.id, comment.id)}
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p>댓글이 없습니다.</p>
+                  )}
+                  <div className="add-comment">
+                    <input
+                      type="text"
+                      placeholder="댓글 추가"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="input-field"
+                    />
+                    <button onClick={() => handleAddComment(item.id)} className="add-button">
+                      추가
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
-
-      {/* 선택된 단어 상세보기 */}
-      {selectedWord && (
-        <div className="word-detail card">
-          <h2>{selectedWord.word}</h2>
-          <p>{selectedWord.meaning}</p>
-
-          {/* 수정/삭제 버튼 */}
-          <div className="action-buttons">
-            <button
-              className="edit-button"
-              onClick={() =>
-                handleEditWord(
-                  selectedWord.id,
-                  prompt("새 단어:", selectedWord.word) || selectedWord.word,
-                  prompt("새 뜻:", selectedWord.meaning) || selectedWord.meaning
-                )
-              }
-            >
-              수정
-            </button>
-            <button
-              className="delete-button"
-              onClick={() => handleDeleteWord(selectedWord.id)}
-            >
-              삭제
-            </button>
-          </div>
-
-          {/* 댓글 섹션 */}
-          <div className="comments-section">
-            <h3>댓글</h3>
-            {selectedWord.comments?.length > 0 ? (
-              selectedWord.comments.map((comment, index) => <p key={index}>- {comment}</p>)
-            ) : (
-              <p>댓글이 없습니다.</p>
-            )}
-            <div className="add-comment">
-              <input
-                type="text"
-                placeholder="댓글 추가"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="input-field"
-              />
-              <button onClick={handleAddComment} className="add-button">
-                추가
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
