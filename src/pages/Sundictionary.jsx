@@ -3,6 +3,7 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase
 import { db } from "../firebaseConfig"; // Firebase 초기화 파일
 import "../sch.css"; // 스타일 파일
 
+
 const Sundictionary = () => {
   const [words, setWords] = useState([]); // 단어 목록
   const [newWord, setNewWord] = useState(""); // 새 단어 입력
