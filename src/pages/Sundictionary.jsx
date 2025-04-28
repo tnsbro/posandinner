@@ -9,7 +9,7 @@ const Sundictionary = () => {
   const [newMeaning, setNewMeaning] = useState(""); // 새 뜻 입력
   const [searchTerm, setSearchTerm] = useState(""); // 검색어
   const [selectedWord, setSelectedWord] = useState(null); // 선택된 단어
-  const [comments, setComments] = useState(""); // 댓글 입력
+  const [newComment, setNewComment] = useState(""); // 새 댓글 입력
   const wordsCollection = collection(db, "words"); // Firestore 컬렉션 참조
 
   // Firestore에서 데이터 가져오기
@@ -44,12 +44,17 @@ const Sundictionary = () => {
   };
 
   // Firestore에 댓글 추가
-  const handleAddComment = async (id, comment) => {
-    const wordDoc = doc(db, "words", id);
-    const updatedComments = [...(selectedWord.comments || []), comment];
-    await updateDoc(wordDoc, { comments: updatedComments });
-    setComments("");
-    fetchWords();
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !selectedWord) return;
+    const wordDoc = doc(db, "words", selectedWord.id);
+    const updatedComments = [...(selectedWord.comments || []), newComment];
+    await updateDoc(wordDoc, { comments: updatedComments }); // Firestore에 댓글 업데이트
+    setNewComment(""); // 댓글 입력 필드 초기화
+    setSelectedWord((prev) => ({
+      ...prev,
+      comments: updatedComments, // UI 즉시 업데이트
+    }));
+    fetchWords(); // Firestore 데이터 갱신
   };
 
   // 검색 필터
@@ -122,8 +127,11 @@ const Sundictionary = () => {
             <button
               className="edit-button"
               onClick={() =>
-                handleEditWord(selectedWord.id, prompt("새 단어:", selectedWord.word) || selectedWord.word, 
-                prompt("새 뜻:", selectedWord.meaning) || selectedWord.meaning)
+                handleEditWord(
+                  selectedWord.id,
+                  prompt("새 단어:", selectedWord.word) || selectedWord.word,
+                  prompt("새 뜻:", selectedWord.meaning) || selectedWord.meaning
+                )
               }
             >
               수정
@@ -148,14 +156,11 @@ const Sundictionary = () => {
               <input
                 type="text"
                 placeholder="댓글 추가"
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
                 className="input-field"
               />
-              <button
-                onClick={() => handleAddComment(selectedWord.id, comments)}
-                className="add-button"
-              >
+              <button onClick={handleAddComment} className="add-button">
                 추가
               </button>
             </div>
