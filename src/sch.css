@@ -805,3 +805,33 @@ table.min-w.full td button.px-3.py-1.text-xs.rounded.bg-gray-300 {
 .cancel-button:hover {
   background-color: #5A6268;
 }
+
+.word-item {
+  cursor: pointer;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.word-item:hover {
+  background-color: #f8f9fa;
+}
+
+.selected {
+  background-color: #FFF3CD;
+  border: 1px solid #FFC107;
+}
+
+.word-detail {
+  margin-top: 2rem;
+}
+
+.comments-section {
+  margin-top: 2rem;
+}
+
+.add-comment {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
