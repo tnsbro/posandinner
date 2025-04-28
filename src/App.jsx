@@ -44,7 +44,7 @@ function App() {
 
   // 특정 사용자 ID만 접근 허용
   const allowedUserIDs = ['3312', '3404'];
-  const isAllowedUser = loggedInUserData?.id && allowedUserIDs.includes(loggedInUserData.id.toString());
+  const isAllowedUser = loggedInUserData?.id && allowedUserIDs.includes(loggedInUserData.id);
 
   console.log('loggedInUserData:', loggedInUserData);
   console.log('isAllowedUser:', isAllowedUser);
