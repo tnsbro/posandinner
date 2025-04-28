@@ -14,8 +14,12 @@ const Sundictionary = ({ currentUser }) => {
 
   // Firestore에서 데이터 가져오기
   const fetchWords = async () => {
-    const data = await getDocs(wordsCollection);
-    setWords(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    try {
+      const data = await getDocs(wordsCollection);
+      setWords(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    } catch (error) {
+      console.error("단어 목록을 가져오는 중 오류 발생:", error);
+    }
   };
 
   // Firestore에 단어 추가
@@ -24,14 +28,18 @@ const Sundictionary = ({ currentUser }) => {
       alert("단어와 뜻을 입력해주세요.");
       return;
     }
-    await addDoc(wordsCollection, {
-      word: newWord.trim(),
-      meaning: newMeaning.trim(),
-      comments: [],
-    });
-    setNewWord("");
-    setNewMeaning("");
-    fetchWords();
+    try {
+      await addDoc(wordsCollection, {
+        word: newWord.trim(),
+        meaning: newMeaning.trim(),
+        comments: [],
+      });
+      setNewWord("");
+      setNewMeaning("");
+      fetchWords();
+    } catch (error) {
+      console.error("단어 추가 중 오류 발생:", error);
+    }
   };
 
   // Firestore에서 댓글 추가
@@ -43,7 +51,6 @@ const Sundictionary = ({ currentUser }) => {
     const wordDoc = doc(db, "words", wordId);
 
     try {
-      // 문서 존재 여부 확인
       const docSnapshot = await getDoc(wordDoc);
       if (!docSnapshot.exists()) {
         alert("단어를 찾을 수 없습니다.");
@@ -55,6 +62,11 @@ const Sundictionary = ({ currentUser }) => {
         ...(targetWord.comments || []), // 기존 댓글 배열
         { text: newComment, user: currentUser, id: Date.now().toString() }, // 새 댓글
       ];
+
+      // 댓글 데이터 검증
+      if (!Array.isArray(updatedComments)) {
+        throw new Error("댓글 데이터가 올바른 형식이 아닙니다.");
+      }
 
       await updateDoc(wordDoc, { comments: updatedComments });
       setNewComment(""); // 댓글 입력 필드 초기화
