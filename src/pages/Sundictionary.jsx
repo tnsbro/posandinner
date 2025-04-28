@@ -33,44 +33,78 @@ const Sundictionary = ({ currentUser }) => {
 
   // Firestore에서 댓글 추가
   const handleAddComment = async (wordId) => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim()) {
+      alert("댓글을 입력해주세요.");
+      return;
+    }
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
+    if (!targetWord) {
+      alert("단어를 찾을 수 없습니다.");
+      return;
+    }
     const updatedComments = [
       ...(targetWord.comments || []),
       { text: newComment, user: currentUser, id: Date.now().toString() },
     ];
-    await updateDoc(wordDoc, { comments: updatedComments });
-    setNewComment("");
-    fetchWords();
+    try {
+      await updateDoc(wordDoc, { comments: updatedComments });
+      setNewComment("");
+      fetchWords();
+    } catch (error) {
+      console.error("댓글 추가 중 오류 발생:", error);
+    }
   };
 
   // Firestore에서 댓글 수정
   const handleEditComment = async (wordId, commentId, newText) => {
-    if (!newText?.trim()) return;
+    if (!newText?.trim()) {
+      alert("수정할 댓글 내용을 입력해주세요.");
+      return;
+    }
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
+    if (!targetWord) {
+      alert("단어를 찾을 수 없습니다.");
+      return;
+    }
     const updatedComments = targetWord.comments.map((comment) =>
       comment.id === commentId ? { ...comment, text: newText } : comment
     );
-    await updateDoc(wordDoc, { comments: updatedComments });
-    fetchWords();
+    try {
+      await updateDoc(wordDoc, { comments: updatedComments });
+      fetchWords();
+    } catch (error) {
+      console.error("댓글 수정 중 오류 발생:", error);
+    }
   };
 
   // Firestore에서 댓글 삭제
   const handleDeleteComment = async (wordId, commentId) => {
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
+    if (!targetWord) {
+      alert("단어를 찾을 수 없습니다.");
+      return;
+    }
     const updatedComments = targetWord.comments.filter((comment) => comment.id !== commentId);
-    await updateDoc(wordDoc, { comments: updatedComments });
-    fetchWords();
+    try {
+      await updateDoc(wordDoc, { comments: updatedComments });
+      fetchWords();
+    } catch (error) {
+      console.error("댓글 삭제 중 오류 발생:", error);
+    }
   };
 
   // Firestore에서 단어 삭제
   const handleDeleteWord = async (id) => {
     const wordDoc = doc(db, "words", id);
-    await deleteDoc(wordDoc);
-    fetchWords();
+    try {
+      await deleteDoc(wordDoc);
+      fetchWords();
+    } catch (error) {
+      console.error("단어 삭제 중 오류 발생:", error);
+    }
   };
 
   // 검색 필터
