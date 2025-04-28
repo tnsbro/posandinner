@@ -12,29 +12,29 @@ import PhraseCreater from './pages/phraseCreater';
 import Sundictionary from './pages/Sundictionary'; // 추가된 페이지
 import './sch.css';
 
+const PrivateRoute = ({ element, allowedRoles }) => {
+  const { loggedInUserData } = useAuth();
+
+  console.log('PrivateRoute, loggedInUserData:', loggedInUserData);
+
+  if (!loggedInUserData) {
+    return <LoginPage />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(loggedInUserData.role)) {
+    return <LoginPage />;
+  }
+
+  return element;
+};
+
 function App() {
   const location = useLocation();
-  const { loggedInUserData, loading, setLoggedInUserData } = useAuth(); // setLoggedInUserData 추가
+  const { loggedInUserData, loading } = useAuth();
   const [timeoutError, setTimeoutError] = useState(false);
 
   console.log('App rendered, loading:', loading, 'loggedInUserData:', loggedInUserData);
 
-  // 새로고침 시 로컬 스토리지에서 사용자 데이터 복원
-  useEffect(() => {
-    const storedUserData = localStorage.getItem('loggedInUserData');
-    if (storedUserData && !loggedInUserData) {
-      setLoggedInUserData(JSON.parse(storedUserData));
-    }
-  }, [loggedInUserData, setLoggedInUserData]);
-
-  // 사용자 데이터가 변경될 때 로컬 스토리지에 저장
-  useEffect(() => {
-    if (loggedInUserData) {
-      localStorage.setItem('loggedInUserData', JSON.stringify(loggedInUserData));
-    }
-  }, [loggedInUserData]);
-
-  // 로딩 상태 처리
   useEffect(() => {
     if (loading) {
       const timer = setTimeout(() => {
@@ -59,11 +59,7 @@ function App() {
   }
 
   // 특정 사용자 ID만 접근 허용
-  const allowedUserIDs = ['3312', '3404'];
-  const isAllowedUser = loggedInUserData?.id && allowedUserIDs.includes(loggedInUserData.id.toString());
-
-  console.log('loggedInUserData:', loggedInUserData);
-  console.log('isAllowedUser:', isAllowedUser);
+  const isAllowedUser = loggedInUserData && ['3312', '3404'].includes(loggedInUserData.id?.toString());
 
   return (
     <div className="App">
@@ -71,39 +67,31 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/student"
-          element={<StudentDashboard />}
-        />
-        <Route
-          path="/sundictionary"
-          element={
-            isAllowedUser ? (
-              <Sundictionary />
-            ) : (
-              <div className="text-center p-4">
-                접근 권한이 없습니다. 로그인 페이지로 이동합니다.
-              </div>
-            )
-          }
-        />
-        <Route
-          path="/phrasejae"
-          element={<PhraseCreater />}
+          element={<PrivateRoute element={<StudentDashboard />} allowedRoles={['student']} />}
         />
         <Route
           path="/change-password"
-          element={<ChangePasswordPage />}
-        />
-        <Route
-          path="/admin"
-          element={<AdminPage />}
-        />
-        <Route
-          path="/scan"
-          element={<ScanPage />}
+          element={<PrivateRoute element={<ChangePasswordPage />} allowedRoles={['student']} />}
         />
         <Route
           path="/pixar"
-          element={<Pixar />}
+          element={<PrivateRoute element={<Pixar />} allowedRoles={['student']} />}
+        />
+        <Route
+          path="/phrasejae"
+          element={<PrivateRoute element={<PhraseCreater />} allowedRoles={['student']} />}
+        />
+        <Route
+          path="/scan"
+          element={<PrivateRoute element={<ScanPage />} allowedRoles={['teacher']} />}
+        />
+        <Route
+          path="/admin"
+          element={<PrivateRoute element={<AdminPage />} allowedRoles={['admin']} />}
+        />
+        <Route
+          path="/sundictionary"
+          element={isAllowedUser ? <Sundictionary /> : <LoginPage />} // 새 라우트 추가
         />
         <Route
           path="/"
