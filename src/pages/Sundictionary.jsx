@@ -60,88 +60,91 @@ const Sundictionary = () => {
   );
 
   return (
-    <div className="dictionary-container">
-      <h1 className="dictionary-title">재윤 순형 은어 대사전</h1>
-
-      {/* 검색 섹션 */}
-      <div className="search-section">
-        <input
-          type="text"
-          placeholder="단어 검색"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="input search-input"
-        />
-      </div>
-
-      {/* 단어 추가 섹션 */}
-      <div className="add-word-section">
-        <input
-          type="text"
-          placeholder="단어 입력"
-          value={newWord}
-          onChange={(e) => setNewWord(e.target.value)}
-          className="input-field"
-        />
-        <input
-          type="text"
-          placeholder="뜻 입력"
-          value={newMeaning}
-          onChange={(e) => setNewMeaning(e.target.value)}
-          className="input-field"
-        />
-        <button onClick={handleAddWord} className="add-button">
-          추가
-        </button>
-      </div>
-
-      {/* 단어 목록 */}
-      <div className="word-list">
-        {filteredWords.map((item) => (
-          <div key={item.id} className="word-item">
-            {editIndex === item.id ? (
-              <div className="edit-section">
-                <input
-                  type="text"
-                  value={editWord}
-                  onChange={(e) => setEditWord(e.target.value)}
-                  className="input-field"
-                />
-                <input
-                  type="text"
-                  value={editMeaning}
-                  onChange={(e) => setEditMeaning(e.target.value)}
-                  className="input-field"
-                />
-                <button onClick={handleEditWord} className="save-button">
-                  저장
-                </button>
-                <button onClick={() => setEditIndex(null)} className="cancel-button">
-                  취소
-                </button>
-              </div>
-            ) : (
-              <>
-                <strong>{item.word}</strong>: {item.meaning}
-                <div className="action-buttons">
-                  <button
-                    onClick={() => {
-                      setEditIndex(item.id);
-                      setEditWord(item.word);
-                      setEditMeaning(item.meaning);
-                    }}
-                    className="edit-button"
-                  >
-                    수정
+    
+    <div className="container mx-auto p-4 max-w-md">
+      <div className="dictionary-container">
+        <h1 className="dictionary-title">재윤 순형 은어 대사전</h1>
+  
+        {/* 검색 섹션 */}
+        <div className="search-section">
+          <input
+            type="text"
+            placeholder="단어 검색"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input search-input"
+          />
+        </div>
+  
+        {/* 단어 추가 섹션 */}
+        <div className="add-word-section">
+          <input
+            type="text"
+            placeholder="단어 입력"
+            value={newWord}
+            onChange={(e) => setNewWord(e.target.value)}
+            className="input-field"
+          />
+          <input
+            type="text"
+            placeholder="뜻 입력"
+            value={newMeaning}
+            onChange={(e) => setNewMeaning(e.target.value)}
+            className="input-field"
+          />
+          <button onClick={handleAddWord} className="add-button">
+            추가
+          </button>
+        </div>
+  
+        {/* 단어 목록 */}
+        <div className="word-list">
+          {filteredWords.map((item) => (
+            <div key={item.id} className="word-item">
+              {editIndex === item.id ? (
+                <div className="edit-section">
+                  <input
+                    type="text"
+                    value={editWord}
+                    onChange={(e) => setEditWord(e.target.value)}
+                    className="input-field"
+                  />
+                  <input
+                    type="text"
+                    value={editMeaning}
+                    onChange={(e) => setEditMeaning(e.target.value)}
+                    className="input-field"
+                  />
+                  <button onClick={handleEditWord} className="save-button">
+                    저장
                   </button>
-                  <button onClick={() => handleDeleteWord(item.id)} className="delete-button">
-                    삭제
+                  <button onClick={() => setEditIndex(null)} className="cancel-button">
+                    취소
                   </button>
                 </div>
-              </>
-            )}
-          </div>
-        ))}
+              ) : (
+                <>
+                  <strong>{item.word}</strong>: {item.meaning}
+                  <div className="action-buttons">
+                    <button
+                      onClick={() => {
+                        setEditIndex(item.id);
+                        setEditWord(item.word);
+                        setEditMeaning(item.meaning);
+                      }}
+                      className="edit-button"
+                    >
+                      수정
+                    </button>
+                    <button onClick={() => handleDeleteWord(item.id)} className="delete-button">
+                      삭제
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
