@@ -12,22 +12,6 @@ import PhraseCreater from './pages/phraseCreater';
 import Sundictionary from './pages/Sundictionary'; // 추가된 페이지
 import './sch.css';
 
-const PrivateRoute = ({ element, allowedRoles }) => {
-  const { loggedInUserData } = useAuth();
-
-  console.log('PrivateRoute, loggedInUserData:', loggedInUserData);
-
-  if (!loggedInUserData) {
-    return <LoginPage />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(loggedInUserData.role)) {
-    return <LoginPage />;
-  }
-
-  return element;
-};
-
 function App() {
   const location = useLocation();
   const { loggedInUserData, loading } = useAuth();
@@ -59,7 +43,11 @@ function App() {
   }
 
   // 특정 사용자 ID만 접근 허용
-  const isAllowedUser = loggedInUserData && ['3312', '3404'].includes(loggedInUserData.id?.toString());
+  const allowedUserIDs = ['3312', '3404'];
+  const isAllowedUser = loggedInUserData?.id && allowedUserIDs.includes(loggedInUserData.id.toString());
+
+  console.log('loggedInUserData:', loggedInUserData);
+  console.log('isAllowedUser:', isAllowedUser);
 
   return (
     <div className="App">
@@ -67,31 +55,39 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/student"
-          element={<PrivateRoute element={<StudentDashboard />} allowedRoles={['student']} />}
-        />
-        <Route
-          path="/change-password"
-          element={<PrivateRoute element={<ChangePasswordPage />} allowedRoles={['student']} />}
-        />
-        <Route
-          path="/pixar"
-          element={<PrivateRoute element={<Pixar />} allowedRoles={['student']} />}
-        />
-        <Route
-          path="/phrasejae"
-          element={<PrivateRoute element={<PhraseCreater />} allowedRoles={['student']} />}
-        />
-        <Route
-          path="/scan"
-          element={<PrivateRoute element={<ScanPage />} allowedRoles={['teacher']} />}
-        />
-        <Route
-          path="/admin"
-          element={<PrivateRoute element={<AdminPage />} allowedRoles={['admin']} />}
+          element={<StudentDashboard />}
         />
         <Route
           path="/sundictionary"
-          element={isAllowedUser ? <Sundictionary /> : <LoginPage />} // 새 라우트 추가
+          element={
+            isAllowedUser ? (
+              <Sundictionary />
+            ) : (
+              <div className="text-center p-4">
+                접근 권한이 없습니다. 로그인 페이지로 이동합니다.
+              </div>
+            )
+          }
+        />
+        <Route
+          path="/phrasejae"
+          element={<PhraseCreater />}
+        />
+        <Route
+          path="/change-password"
+          element={<ChangePasswordPage />}
+        />
+        <Route
+          path="/admin"
+          element={<AdminPage />}
+        />
+        <Route
+          path="/scan"
+          element={<ScanPage />}
+        />
+        <Route
+          path="/pixar"
+          element={<Pixar />}
         />
         <Route
           path="/"
