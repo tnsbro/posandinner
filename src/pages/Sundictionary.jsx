@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { db } from "../firebaseConfig"; // Firebase 초기화 파일
+import { db } from "../firebaseConfig"; // Firestore 초기화 파일
 import "../sch.css"; // 스타일 파일
 
 const Sundictionary = () => {
@@ -17,7 +17,9 @@ const Sundictionary = () => {
   // Firestore에서 데이터 가져오기
   const fetchWords = async () => {
     const data = await getDocs(wordsCollection);
-    setWords(data.docs.map((doc) => ({ ...doc.data(), id: doc.id }))); // Firestore 데이터 매핑
+    setWords(
+      data.docs.map((doc) => ({ ...doc.data(), id: doc.id })) // Firestore 데이터 매핑
+    );
   };
 
   // Firestore에 단어 추가
@@ -54,7 +56,7 @@ const Sundictionary = () => {
 
   // 검색 필터
   const filteredWords = words.filter((item) =>
-    item.word.toLowerCase().includes(searchTerm.toLowerCase())
+    item.word?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
