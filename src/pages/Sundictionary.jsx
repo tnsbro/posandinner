@@ -173,6 +173,7 @@ const Sundictionary = ({ currentUser }) => {
   }, []);
 
   return (
+    <div className="container mx-auto p-4 max-w-md">
     <div className="dictionary-container">
       <h1 className="dictionary-title">재윤 순형 은어 대사전</h1>
 
@@ -285,6 +286,7 @@ const Sundictionary = ({ currentUser }) => {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 };
