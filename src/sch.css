@@ -835,3 +835,22 @@ table.min-w.full td button.px-3.py-1.text-xs.rounded.bg-gray-300 {
   gap: 0.5rem;
   margin-top: 1rem;
 }
+.word-detail {
+  margin-top: 1rem;
+}
+
+.comment-item {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.comment-actions {
+  margin-top: 0.3rem;
+}
+
+.comment-actions button {
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
