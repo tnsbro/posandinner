@@ -41,22 +41,24 @@ const Sundictionary = ({ currentUser }) => {
       return;
     }
     const wordDoc = doc(db, "words", wordId);
-    const targetWord = words.find((word) => word.id === wordId);
-
-    if (!targetWord) {
-      alert("단어를 찾을 수 없습니다.");
-      return;
-    }
-
-    const updatedComments = [
-      ...(targetWord.comments || []),
-      { text: newComment, user: currentUser, id: Date.now().toString() },
-    ];
 
     try {
+      // 문서 존재 여부 확인
+      const docSnapshot = await getDoc(wordDoc);
+      if (!docSnapshot.exists()) {
+        alert("단어를 찾을 수 없습니다.");
+        return;
+      }
+
+      const targetWord = docSnapshot.data();
+      const updatedComments = [
+        ...(targetWord.comments || []), // 기존 댓글 배열
+        { text: newComment, user: currentUser, id: Date.now().toString() }, // 새 댓글
+      ];
+
       await updateDoc(wordDoc, { comments: updatedComments });
-      setNewComment("");
-      fetchWords();
+      setNewComment(""); // 댓글 입력 필드 초기화
+      fetchWords(); // Firestore 데이터 다시 가져오기
     } catch (error) {
       console.error("댓글 추가 중 오류 발생:", error);
       alert("댓글 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
@@ -70,18 +72,19 @@ const Sundictionary = ({ currentUser }) => {
       return;
     }
     const wordDoc = doc(db, "words", wordId);
-    const targetWord = words.find((word) => word.id === wordId);
-
-    if (!targetWord) {
-      alert("단어를 찾을 수 없습니다.");
-      return;
-    }
-
-    const updatedComments = targetWord.comments.map((comment) =>
-      comment.id === commentId ? { ...comment, text: newText } : comment
-    );
 
     try {
+      const docSnapshot = await getDoc(wordDoc);
+      if (!docSnapshot.exists()) {
+        alert("단어를 찾을 수 없습니다.");
+        return;
+      }
+
+      const targetWord = docSnapshot.data();
+      const updatedComments = targetWord.comments.map((comment) =>
+        comment.id === commentId ? { ...comment, text: newText } : comment
+      );
+
       await updateDoc(wordDoc, { comments: updatedComments });
       fetchWords();
     } catch (error) {
@@ -93,16 +96,17 @@ const Sundictionary = ({ currentUser }) => {
   // Firestore에서 댓글 삭제
   const handleDeleteComment = async (wordId, commentId) => {
     const wordDoc = doc(db, "words", wordId);
-    const targetWord = words.find((word) => word.id === wordId);
-
-    if (!targetWord) {
-      alert("단어를 찾을 수 없습니다.");
-      return;
-    }
-
-    const updatedComments = targetWord.comments.filter((comment) => comment.id !== commentId);
 
     try {
+      const docSnapshot = await getDoc(wordDoc);
+      if (!docSnapshot.exists()) {
+        alert("단어를 찾을 수 없습니다.");
+        return;
+      }
+
+      const targetWord = docSnapshot.data();
+      const updatedComments = targetWord.comments.filter((comment) => comment.id !== commentId);
+
       await updateDoc(wordDoc, { comments: updatedComments });
       fetchWords();
     } catch (error) {
