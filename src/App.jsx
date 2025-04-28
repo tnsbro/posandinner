@@ -27,6 +27,7 @@ const PrivateRoute = ({ element, allowedRoles }) => {
 
   return element;
 };
+const isAllowedUser = loggedInUserData && ['3312', '3404'].includes(loggedInUserData.id?.toString());
 
 function App() {
   const location = useLocation();
