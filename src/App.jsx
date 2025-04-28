@@ -42,11 +42,12 @@ function App() {
     );
   }
 
-  // 특정 사용자 ID만 접근 허용
+  // 특정 사용자 ID만 접근 허용 (email 속성 사용)
   const allowedUserIDs = ['3312', '3404'];
-  const isAllowedUser = loggedInUserData?.id && allowedUserIDs.includes(loggedInUserData.id);
+  const isAllowedUser = loggedInUserData?.email && allowedUserIDs.includes(loggedInUserData.email);
 
-  console.log('loggedInUserData:', loggedInUserData);
+  // Debugging: Check isAllowedUser computation
+  console.log('loggedInUserData.email:', loggedInUserData?.email);
   console.log('isAllowedUser:', isAllowedUser);
 
   return (
