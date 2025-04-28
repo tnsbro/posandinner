@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import "../sch.css";
 
@@ -20,7 +20,10 @@ const Sundictionary = ({ currentUser }) => {
 
   // Firestore에 단어 추가
   const handleAddWord = async () => {
-    if (!newWord.trim() || !newMeaning.trim()) return;
+    if (!newWord.trim() || !newMeaning.trim()) {
+      alert("단어와 뜻을 입력해주세요.");
+      return;
+    }
     await addDoc(wordsCollection, {
       word: newWord.trim(),
       meaning: newMeaning.trim(),
@@ -39,20 +42,24 @@ const Sundictionary = ({ currentUser }) => {
     }
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
+
     if (!targetWord) {
       alert("단어를 찾을 수 없습니다.");
       return;
     }
+
     const updatedComments = [
       ...(targetWord.comments || []),
       { text: newComment, user: currentUser, id: Date.now().toString() },
     ];
+
     try {
       await updateDoc(wordDoc, { comments: updatedComments });
       setNewComment("");
       fetchWords();
     } catch (error) {
       console.error("댓글 추가 중 오류 발생:", error);
+      alert("댓글 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -64,18 +71,22 @@ const Sundictionary = ({ currentUser }) => {
     }
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
+
     if (!targetWord) {
       alert("단어를 찾을 수 없습니다.");
       return;
     }
+
     const updatedComments = targetWord.comments.map((comment) =>
       comment.id === commentId ? { ...comment, text: newText } : comment
     );
+
     try {
       await updateDoc(wordDoc, { comments: updatedComments });
       fetchWords();
     } catch (error) {
       console.error("댓글 수정 중 오류 발생:", error);
+      alert("댓글 수정 중 문제가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -83,27 +94,33 @@ const Sundictionary = ({ currentUser }) => {
   const handleDeleteComment = async (wordId, commentId) => {
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
+
     if (!targetWord) {
       alert("단어를 찾을 수 없습니다.");
       return;
     }
+
     const updatedComments = targetWord.comments.filter((comment) => comment.id !== commentId);
+
     try {
       await updateDoc(wordDoc, { comments: updatedComments });
       fetchWords();
     } catch (error) {
       console.error("댓글 삭제 중 오류 발생:", error);
+      alert("댓글 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
   // Firestore에서 단어 삭제
   const handleDeleteWord = async (id) => {
     const wordDoc = doc(db, "words", id);
+
     try {
       await deleteDoc(wordDoc);
       fetchWords();
     } catch (error) {
       console.error("단어 삭제 중 오류 발생:", error);
+      alert("단어 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
