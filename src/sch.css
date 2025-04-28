@@ -735,3 +735,73 @@ table.min-w.full td button.px-3.py-1.text-xs.rounded.bg-gray-300 {
   background-color: #FFFFFF;
   padding: 8px 0;
 }
+
+/* 검색 입력 필드 */
+.search-section {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #CED4DA;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+/* 단어 수정 및 삭제 버튼 */
+.action-buttons {
+  margin-top: 0.5rem;
+}
+
+.edit-button, .delete-button, .save-button, .cancel-button {
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.edit-button {
+  background-color: #FFC107;
+  color: #000000;
+}
+
+.edit-button:hover {
+  background-color: #FFB300;
+}
+
+.delete-button {
+  background-color: #DC3545;
+  color: #FFFFFF;
+}
+
+.delete-button:hover {
+  background-color: #C82333;
+}
+
+.save-button {
+  background-color: #28A745;
+  color: #FFFFFF;
+}
+
+.save-button:hover {
+  background-color: #218838;
+}
+
+.cancel-button {
+  background-color: #6C757D;
+  color: #FFFFFF;
+}
+
+.cancel-button:hover {
+  background-color: #5A6268;
+}
