@@ -47,6 +47,7 @@ const Sundictionary = ({ currentUser }) => {
 
   // Firestore에서 댓글 수정
   const handleEditComment = async (wordId, commentId, newText) => {
+    if (!newText?.trim()) return;
     const wordDoc = doc(db, "words", wordId);
     const targetWord = words.find((word) => word.id === wordId);
     const updatedComments = targetWord.comments.map((comment) =>
