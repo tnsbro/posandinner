@@ -9,7 +9,7 @@ import AdminPage from './pages/AdminPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import Pixar from './pages/ScanerPicture';
 import PhraseCreater from './pages/phraseCreater';
-import Sundictionary from './pages/Sundictionary';
+import Sundictionary from './pages/Sundictionary'; // 추가된 페이지
 import './sch.css';
 
 const PrivateRoute = ({ element, allowedRoles }) => {
@@ -59,7 +59,9 @@ function App() {
   }
 
   // 특정 사용자 ID만 접근 허용
-  const isAllowedUser = loggedInUserData?.id && ['3312', '3404'].includes(loggedInUserData.id.toString());
+  const isAllowedUser = loggedInUserData?.id
+    ? ['3312', '3404'].includes(loggedInUserData.id.toString())
+    : false;
 
   console.log('isAllowedUser:', isAllowedUser);
 
@@ -97,7 +99,9 @@ function App() {
             isAllowedUser ? (
               <Sundictionary />
             ) : (
-              <div className="text-center p-4">접근 권한이 없습니다. 로그인 페이지로 이동합니다.</div>
+              <div className="text-center p-4">
+                접근 권한이 없습니다. 로그인 페이지로 이동합니다.
+              </div>
             )
           }
         />
