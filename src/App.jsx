@@ -9,6 +9,7 @@ import AdminPage from './pages/AdminPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import Pixar from './pages/ScanerPicture';
 import PhraseCreater from './pages/phraseCreater';
+import Sundictionary from './pages/Sundictionary'; // 추가된 페이지
 import './sch.css';
 
 const PrivateRoute = ({ element, allowedRoles }) => {
@@ -57,6 +58,9 @@ function App() {
     );
   }
 
+  // 특정 사용자 ID만 접근 허용
+  const isAllowedUser = loggedInUserData && ['3312', '3404'].includes(loggedInUserData.id?.toString());
+
   return (
     <div className="App">
       <Routes>
@@ -84,6 +88,10 @@ function App() {
         <Route
           path="/admin"
           element={<PrivateRoute element={<AdminPage />} allowedRoles={['admin']} />}
+        />
+        <Route
+          path="/sundictionary"
+          element={isAllowedUser ? <Sundictionary /> : <LoginPage />} // 새 라우트 추가
         />
         <Route
           path="/"
@@ -117,7 +125,6 @@ function App() {
 
       {location.pathname !== '/login' && (
         <footer className="footer">
-
           ⓒ 2025 포산고등학교. All rights reserved.
         </footer>
       )}
