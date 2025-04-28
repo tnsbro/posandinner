@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+
 import LoginPage from './pages/LoginPage';
 import StudentDashboard from './pages/StudentDashboard';
 import ScanPage from './pages/ScanPage';
@@ -8,7 +9,7 @@ import AdminPage from './pages/AdminPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import Pixar from './pages/ScanerPicture';
 import PhraseCreater from './pages/phraseCreater';
-import Sundictionary from './pages/Sundictionary'; // 추가된 페이지
+import Sundictionary from './pages/Sundictionary';
 import './sch.css';
 
 function App() {
@@ -53,15 +54,12 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/student"
-          element={<StudentDashboard />}
-        />
+        <Route path="/student" element={<StudentDashboard />} />
         <Route
           path="/sundictionary"
           element={
             isAllowedUser ? (
-              <Sundictionary />
+              <Sundictionary userId={loggedInUserData.email} />
             ) : (
               <div className="text-center p-4 text-red-600">
                 접근 권한이 없습니다. 로그인 페이지로 이동합니다.
@@ -69,26 +67,11 @@ function App() {
             )
           }
         />
-        <Route
-          path="/phrasejae"
-          element={<PhraseCreater />}
-        />
-        <Route
-          path="/change-password"
-          element={<ChangePasswordPage />}
-        />
-        <Route
-          path="/admin"
-          element={<AdminPage />}
-        />
-        <Route
-          path="/scan"
-          element={<ScanPage />}
-        />
-        <Route
-          path="/pixar"
-          element={<Pixar />}
-        />
+        <Route path="/phrasejae" element={<PhraseCreater />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/scan" element={<ScanPage />} />
+        <Route path="/pixar" element={<Pixar />} />
         <Route
           path="/"
           element={
