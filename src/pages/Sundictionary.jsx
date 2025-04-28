@@ -4,15 +4,15 @@ import { db } from "../firebaseConfig";
 import "../sch.css";
 
 const Sundictionary = ({ currentUser }) => {
-  const [words, setWords] = useState([]); // 단어 목록
-  const [newWord, setNewWord] = useState(""); // 새 단어 입력
-  const [newMeaning, setNewMeaning] = useState(""); // 새 뜻 입력
-  const [searchTerm, setSearchTerm] = useState(""); // 검색어
-  const [expandedWordId, setExpandedWordId] = useState(null); // 클릭된 단어 ID
-  const [newComment, setNewComment] = useState(""); // 새 댓글 입력
-  const wordsCollection = collection(db, "words"); // Firestore 컬렉션 참조
+  const [words, setWords] = useState([]);
+  const [newWord, setNewWord] = useState("");
+  const [newMeaning, setNewMeaning] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedWordId, setExpandedWordId] = useState(null);
+  const [newComment, setNewComment] = useState("");
+  const wordsCollection = collection(db, "words");
 
-  // Firestore에서 데이터 가져오기
+  // Firestore에서 단어 가져오기
   const fetchWords = async () => {
     try {
       const data = await getDocs(wordsCollection);
@@ -42,7 +42,7 @@ const Sundictionary = ({ currentUser }) => {
     }
   };
 
-  // Firestore에서 댓글 추가
+  // Firestore에 댓글 추가
   const handleAddComment = async (wordId) => {
     if (!newComment.trim()) {
       alert("댓글을 입력해주세요.");
@@ -59,18 +59,17 @@ const Sundictionary = ({ currentUser }) => {
 
       const targetWord = docSnapshot.data();
       const updatedComments = [
-        ...(targetWord.comments || []), // 기존 댓글 배열
-        { text: newComment, user: currentUser, id: Date.now().toString() }, // 새 댓글
+        ...(targetWord.comments || []),
+        { 
+          text: newComment, 
+          user: currentUser || "익명", 
+          id: Date.now().toString() 
+        },
       ];
 
-      // 댓글 데이터 검증
-      if (!Array.isArray(updatedComments)) {
-        throw new Error("댓글 데이터가 올바른 형식이 아닙니다.");
-      }
-
       await updateDoc(wordDoc, { comments: updatedComments });
-      setNewComment(""); // 댓글 입력 필드 초기화
-      fetchWords(); // Firestore 데이터 다시 가져오기
+      setNewComment("");
+      fetchWords();
     } catch (error) {
       console.error("댓글 추가 중 오류 발생:", error);
       alert("댓글 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
@@ -140,12 +139,12 @@ const Sundictionary = ({ currentUser }) => {
     }
   };
 
-  // 검색 필터
+  // 검색어 필터링
   const filteredWords = words.filter((item) =>
     item.word?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // 컴포넌트 마운트 시 Firestore 데이터 로드
+  // 첫 마운트 때 데이터 가져오기
   useEffect(() => {
     fetchWords();
   }, []);
@@ -190,9 +189,13 @@ const Sundictionary = ({ currentUser }) => {
       <div className="word-list">
         {filteredWords.map((item) => (
           <div key={item.id} className="word-item card">
-            <div onClick={() => setExpandedWordId(item.id === expandedWordId ? null : item.id)}>
+            <div 
+              onClick={() => setExpandedWordId(item.id === expandedWordId ? null : item.id)}
+              className="word-header"
+            >
               <strong>{item.word}</strong>
             </div>
+
             {expandedWordId === item.id && (
               <div className="word-detail">
                 <p>{item.meaning}</p>
@@ -206,43 +209,60 @@ const Sundictionary = ({ currentUser }) => {
                         <p>
                           <strong>{comment.user}</strong>: {comment.text}
                         </p>
-                        {comment.user === currentUser && (
-                          <div className="comment-actions">
-                            <button
-                              className="edit-button"
-                              onClick={() => {
-                                const newText = prompt("댓글 수정:", comment.text);
-                                if (newText) handleEditComment(item.id, comment.id, newText);
-                              }}
-                            >
-                              수정
-                            </button>
-                            <button
-                              className="delete-button"
-                              onClick={() => handleDeleteComment(item.id, comment.id)}
-                            >
-                              삭제
-                            </button>
-                          </div>
-                        )}
+                        {/* 댓글 수정/삭제 버튼 */}
+                        <div className="comment-actions">
+                          <button
+                            onClick={() => {
+                              const newText = prompt("수정할 댓글 내용을 입력하세요.", comment.text);
+                              if (newText !== null) {
+                                handleEditComment(item.id, comment.id, newText);
+                              }
+                            }}
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm("댓글을 삭제하시겠습니까?")) {
+                                handleDeleteComment(item.id, comment.id);
+                              }
+                            }}
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
                     <p>댓글이 없습니다.</p>
                   )}
-                  <div className="add-comment">
+
+                  {/* 새 댓글 입력 */}
+                  <div className="add-comment-section">
                     <input
                       type="text"
-                      placeholder="댓글 추가"
+                      placeholder="댓글 입력"
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       className="input-field"
                     />
                     <button onClick={() => handleAddComment(item.id)} className="add-button">
-                      추가
+                      댓글 추가
                     </button>
                   </div>
                 </div>
+
+                {/* 단어 삭제 버튼 */}
+                <button
+                  onClick={() => {
+                    if (window.confirm("이 단어를 삭제하시겠습니까?")) {
+                      handleDeleteWord(item.id);
+                    }
+                  }}
+                  className="delete-button"
+                >
+                  단어 삭제
+                </button>
               </div>
             )}
           </div>
