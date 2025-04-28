@@ -10,12 +10,17 @@ const Sundictionary = ({ currentUser }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedWordId, setExpandedWordId] = useState(null);
   const [newComment, setNewComment] = useState("");
+  const [editingWordId, setEditingWordId] = useState(null);
+  const [editedWord, setEditedWord] = useState("");
+  const [editedMeaning, setEditedMeaning] = useState("");
+
   const wordsCollection = collection(db, "words");
 
-  // 유저 이름 매핑
-  const getUserName = () => {
-    if (currentUser === "3312") return "정재윤";
-    if (currentUser === "3404") return "박순형";
+  const getDisplayName = (user) => {
+    if (!user) return "익명";
+    const id = user.uid || user;
+    if (id === "3312") return "정재윤";
+    if (id === "3404") return "박순형";
     return "익명";
   };
 
@@ -24,7 +29,7 @@ const Sundictionary = ({ currentUser }) => {
       const data = await getDocs(wordsCollection);
       setWords(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     } catch (error) {
-      console.error("단어 목록을 가져오는 중 오류 발생:", error);
+      console.error("단어 목록 가져오기 오류:", error);
     }
   };
 
@@ -43,7 +48,27 @@ const Sundictionary = ({ currentUser }) => {
       setNewMeaning("");
       fetchWords();
     } catch (error) {
-      console.error("단어 추가 중 오류 발생:", error);
+      console.error("단어 추가 오류:", error);
+    }
+  };
+
+  const handleEditWord = (word) => {
+    setEditingWordId(word.id);
+    setEditedWord(word.word);
+    setEditedMeaning(word.meaning);
+  };
+
+  const handleSaveEdit = async (id) => {
+    const wordDoc = doc(db, "words", id);
+    try {
+      await updateDoc(wordDoc, {
+        word: editedWord,
+        meaning: editedMeaning,
+      });
+      setEditingWordId(null);
+      fetchWords();
+    } catch (error) {
+      console.error("단어 수정 오류:", error);
     }
   };
 
@@ -53,6 +78,7 @@ const Sundictionary = ({ currentUser }) => {
       return;
     }
     const wordDoc = doc(db, "words", wordId);
+    const displayName = getDisplayName(currentUser);
 
     try {
       const docSnapshot = await getDoc(wordDoc);
@@ -60,14 +86,13 @@ const Sundictionary = ({ currentUser }) => {
         alert("단어를 찾을 수 없습니다.");
         return;
       }
-
       const targetWord = docSnapshot.data();
       const updatedComments = [
         ...(targetWord.comments || []),
-        { 
-          text: newComment, 
-          user: getUserName(), 
-          id: Date.now().toString() 
+        {
+          text: newComment,
+          user: displayName,
+          id: Date.now().toString(),
         },
       ];
 
@@ -75,14 +100,13 @@ const Sundictionary = ({ currentUser }) => {
       setNewComment("");
       fetchWords();
     } catch (error) {
-      console.error("댓글 추가 중 오류 발생:", error);
-      alert("댓글 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
+      console.error("댓글 추가 오류:", error);
     }
   };
 
   const handleEditComment = async (wordId, commentId, newText) => {
     if (!newText?.trim()) {
-      alert("수정할 댓글 내용을 입력해주세요.");
+      alert("수정할 댓글을 입력하세요.");
       return;
     }
     const wordDoc = doc(db, "words", wordId);
@@ -93,7 +117,6 @@ const Sundictionary = ({ currentUser }) => {
         alert("단어를 찾을 수 없습니다.");
         return;
       }
-
       const targetWord = docSnapshot.data();
       const updatedComments = targetWord.comments.map((comment) =>
         comment.id === commentId ? { ...comment, text: newText } : comment
@@ -102,8 +125,7 @@ const Sundictionary = ({ currentUser }) => {
       await updateDoc(wordDoc, { comments: updatedComments });
       fetchWords();
     } catch (error) {
-      console.error("댓글 수정 중 오류 발생:", error);
-      alert("댓글 수정 중 문제가 발생했습니다. 다시 시도해주세요.");
+      console.error("댓글 수정 오류:", error);
     }
   };
 
@@ -116,15 +138,13 @@ const Sundictionary = ({ currentUser }) => {
         alert("단어를 찾을 수 없습니다.");
         return;
       }
-
       const targetWord = docSnapshot.data();
       const updatedComments = targetWord.comments.filter((comment) => comment.id !== commentId);
 
       await updateDoc(wordDoc, { comments: updatedComments });
       fetchWords();
     } catch (error) {
-      console.error("댓글 삭제 중 오류 발생:", error);
-      alert("댓글 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
+      console.error("댓글 삭제 오류:", error);
     }
   };
 
@@ -135,8 +155,7 @@ const Sundictionary = ({ currentUser }) => {
       await deleteDoc(wordDoc);
       fetchWords();
     } catch (error) {
-      console.error("단어 삭제 중 오류 발생:", error);
-      alert("단어 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
+      console.error("단어 삭제 오류:", error);
     }
   };
 
@@ -152,7 +171,6 @@ const Sundictionary = ({ currentUser }) => {
     <div className="dictionary-container">
       <h1 className="dictionary-title">재윤 순형 은어 대사전</h1>
 
-      {/* 검색 */}
       <div className="search-section">
         <input
           type="text"
@@ -163,7 +181,6 @@ const Sundictionary = ({ currentUser }) => {
         />
       </div>
 
-      {/* 단어 추가 */}
       <div className="add-word-section card">
         <input
           type="text"
@@ -184,58 +201,65 @@ const Sundictionary = ({ currentUser }) => {
         </button>
       </div>
 
-      {/* 단어 리스트 */}
       <div className="word-list">
         {filteredWords.map((item) => (
           <div key={item.id} className="word-item card">
-            <div 
-              onClick={() => setExpandedWordId(item.id === expandedWordId ? null : item.id)}
-              className="word-header"
-            >
-              <strong>{item.word}</strong>
-            </div>
-
-            {expandedWordId === item.id && (
-              <div className="word-detail">
-                <p>{item.meaning}</p>
-
-                {/* 댓글 */}
-                <div className="comments-section">
-                  <h3>댓글</h3>
-                  {item.comments?.length > 0 ? (
-                    item.comments.map((comment) => (
-                      <div key={comment.id} className="comment-item">
-                        <p>
-                          <strong>{comment.user}</strong>: {comment.text}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p>댓글 없음</p>
-                  )}
-                  <input
-                    type="text"
-                    placeholder="댓글 추가"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="input-field"
-                  />
-                  <button
-                    onClick={() => handleAddComment(item.id)}
-                    className="add-button"
-                  >
-                    댓글 추가
-                  </button>
+            {editingWordId === item.id ? (
+              <>
+                <input
+                  type="text"
+                  value={editedWord}
+                  onChange={(e) => setEditedWord(e.target.value)}
+                  className="input-field"
+                />
+                <input
+                  type="text"
+                  value={editedMeaning}
+                  onChange={(e) => setEditedMeaning(e.target.value)}
+                  className="input-field"
+                />
+                <button onClick={() => handleSaveEdit(item.id)} className="save-button">저장</button>
+              </>
+            ) : (
+              <>
+                <div
+                  onClick={() => setExpandedWordId(item.id === expandedWordId ? null : item.id)}
+                  className="word-header"
+                >
+                  <strong>{item.word}</strong>
                 </div>
 
-                {/* 단어 삭제 버튼 */}
-                <button
-                  onClick={() => handleDeleteWord(item.id)}
-                  className="delete-button"
-                >
-                  단어 삭제
-                </button>
-              </div>
+                {expandedWordId === item.id && (
+                  <div className="word-detail">
+                    <p>{item.meaning}</p>
+
+                    <div className="button-group">
+                      <button onClick={() => handleEditWord(item)} className="edit-button">수정</button>
+                      <button onClick={() => handleDeleteWord(item.id)} className="delete-button">삭제</button>
+                    </div>
+
+                    <div className="comment-section">
+                      <input
+                        type="text"
+                        placeholder="댓글 입력"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="input-field"
+                      />
+                      <button onClick={() => handleAddComment(item.id)} className="add-button">
+                        댓글 추가
+                      </button>
+                      <ul className="comment-list">
+                        {item.comments?.map((comment) => (
+                          <li key={comment.id}>
+                            <strong>{comment.user}:</strong> {comment.text}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}
