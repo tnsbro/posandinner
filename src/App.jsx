@@ -64,7 +64,7 @@ function App() {
             isAllowedUser ? (
               <Sundictionary />
             ) : (
-              <div className="text-center p-4">
+              <div className="text-center p-4 text-red-600">
                 접근 권한이 없습니다. 로그인 페이지로 이동합니다.
               </div>
             )
