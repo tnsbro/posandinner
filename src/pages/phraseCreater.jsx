@@ -96,12 +96,20 @@ function PhraseCreater() {
         <br />
         현재 적용된 문서 개수 : {num}
         {su && <p className="text-center text-gray">문구 생성 완료</p>}
-        <button
-          onClick={() => { navigate('/') }}
-          className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-        >
-          홈
-        </button>
+        <div className="button-group">
+          <button
+            onClick={() => { navigate('/') }}
+            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+          >
+            홈
+          </button>
+          <button
+            onClick={() => { navigate('/sundictionary') }} // 사전으로 이동하는 버튼
+            className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded ml-2"
+          >
+            사전으로
+          </button>
+        </div>
       </div>
     </div>
   );
