@@ -3,7 +3,6 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getDoc } from "
 import { db } from "../firebaseConfig";
 import "../sch.css";
 
-
 const Sundictionary = ({ currentUser }) => {
   const [words, setWords] = useState([]);
   const [newWord, setNewWord] = useState("");
