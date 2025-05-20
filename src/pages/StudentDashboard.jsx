@@ -312,7 +312,7 @@ function StudentDashboard() {
                 >
                     사진 찍기
                 </button>
-                {loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312' ? (
+                {loggedInUserData?.email === '3404' || loggedInUserData?.email === '3312' || loggedInUserData?.email === '3610' ? (
                     <>
                         <span> </span>
                         <button
