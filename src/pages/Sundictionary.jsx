@@ -23,6 +23,7 @@ const Sundictionary = ({ currentUser }) => {
     const id = user.uid || user;
     if (id === "3312") return "정재윤";
     if (id === "3404") return "박순형";
+    if (id === "3610") return "양원진";
     return "익명";
   };
 
