@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+Fimport React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 
@@ -43,7 +43,7 @@ function App() {
   }
 
   // 특정 사용자 ID만 접근 허용 (email 속성 사용)
-  const allowedUserIDs = ['3312', '3404'];
+  const allowedUserIDs = ['3312', '3404', '3610];
   const isAllowedUser = loggedInUserData?.email && allowedUserIDs.includes(loggedInUserData.email);
 
   // Debugging: Check isAllowedUser computation
